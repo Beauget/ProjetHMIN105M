@@ -1,0 +1,5 @@
+Toulouse 50 50
+Montpellier 20 100
+Lyon 40 20
+Toulon 78 21
+Paris 420 180
