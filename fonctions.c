@@ -1,26 +1,4 @@
-#include <stdio.h> 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <netdb.h>
-#include <sys/wait.h>
-#include <sys/sem.h>
-#include <pthread.h>
-#include <ctype.h>
-
-//Quelques couleur pour la visibilité
-#define RED   "\x1B[31m"
-#define GRN   "\x1B[32m"
-#define YEL   "\x1B[33m"
-#define BLU   "\x1B[34m"
-#define MAG   "\x1B[35m"
-#define CYN   "\x1B[36m"
-#define RESET "\x1B[0m"
+#include "fonctions.h"
 
 
 union semun {
@@ -28,42 +6,6 @@ union semun {
     unsigned short  *array;  /* Tableau pour GETALL, SETALL */
     struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
 };
-
-int isInt(char * msg){
-    int size = strlen(msg);
-    int mult = 1;
-    int number = 0;
-
-    for (int i = size-1; i > -1; --i)//je vais de la droite vers la gauche
-    {
-        if(isdigit(msg[i])){
-            number = number + ((msg[i] - 48) * mult); //ex : number = number (char '5' - 48) * 1 sachant que int('5') = 5+48
-            mult = mult * 10; //je change de de mutiple  15  = 5*1 + 1*10
-       }
-
-       else
-        return -1;
-    }
-    return number;
-}
-
-
-int taille = 5; //Pour plus de modularité plus tard
-
-struct dataClient {
-    char nomClient[40];
-    int nbCpu;
-    int stockage;
-}dataClient;
-
-
- struct dataStruct {
-    char ville[20];
-    int go;
-    int cpu;
-    struct dataClient listeRessExclusive[100];
-    struct dataClient listeRessPartager[100];
-}dataStruct;
 
 
 int nbLigne(FILE *file) {
@@ -74,6 +16,14 @@ int nbLigne(FILE *file) {
         return nbLignes;
     }
 
+int taille = 0; //Pour plus de modularité plus tard
+
+int initTaille(){
+    FILE* file = NULL;
+    file = fopen("data.txt","r");
+    taille = nbLigne(file);
+}
+
 void InitDataFromFile(struct dataStruct *data) {
     FILE* file = NULL;
     file = fopen("data.txt","r");
@@ -81,10 +31,12 @@ void InitDataFromFile(struct dataStruct *data) {
 
     if(file != NULL) {
         for(int i = 0; i < taille; i++) {
-           if(fscanf(file,"%s %i %i", data[i].ville,&data[i].go,&data[i].cpu) == 0) {
+           if(fscanf(file,"%s %i %i", data[i].site,&data[i].go,&data[i].cpu) == 0) {
                printf("Erreur fscanf !");
                exit(0);
            }
+           data[i].maxGo = data[i].go;
+           data[i].maxCpu = data[i].cpu;
         }
     }
     else {
@@ -92,17 +44,32 @@ void InitDataFromFile(struct dataStruct *data) {
     }
 }
 
+
 void affichageEtat(struct dataStruct* data) {
     printf(YEL"                 --- AFFICHAGE ETAT SYSTEME --- \n \n");
 for(int i = 0; i < taille;i++) {
-    printf("VILLE : %s, GO DISPONIBLE : %i, CPU DISPONIBLE : %i \n",data[i].ville,data[i].go,data[i].cpu);
+    printf("Site : %s, GO DISPONIBLE : %i/%i, CPU DISPONIBLE : %i/%i \n",data[i].site,data[i].go,data[i].maxGo,data[i].cpu,data[i].maxCpu);
 }
 printf(RED"|||| POUR TOUTE DEMANDE VEUILLEZ LIRE NOTRE DOCUMENTATION |||| \n" RESET);
 
 }
 
 
-
+int isInt(char * msg){
+    int size = strlen(msg);
+    int mult = 1;
+    int number = 0;
+    for (int i = size-1; i > -1; --i)//je vais de la droite vers la gauche
+    {
+        if(isdigit(msg[i])){
+            number = number + ((msg[i] - 48) * mult); //ex : number = number (char '5' - 48) * 1 sachant que int('5') = 5+48
+            mult = mult * 10; //je change de de mutiple  15  = 5*1 + 1*10
+       }
+       else
+        return -1;
+    }
+    return number;
+}
  
 
 int sendFunction(int dsClient, char *message, int taille) {

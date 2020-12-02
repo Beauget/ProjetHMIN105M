@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include "fonctions.c"
+#include "fonctions.c" 
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +50,7 @@ int main(int argc, char *argv[])
 
     if (sendAll(ds, name) < 1)
     {
-        close(ds);
+        close(ds); 
         exit(1);
     }
 
@@ -80,7 +72,8 @@ int main(int argc, char *argv[])
 
     printf("Client : avant boucle \n"); 
 
-        char m[1501];
+    char m[1501];
+    initTaille();
 
     while (1)
     {

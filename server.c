@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <errno.h>
 #include "fonctions.c"
-
-
 
 
 int main(int argc, char *argv[])
@@ -23,7 +12,7 @@ int main(int argc, char *argv[])
 
     //SERVEUR TCP
     int ds = socket(PF_INET, SOCK_STREAM, 0);
-    if (ds == -1)
+    if (ds == -1) 
     {
         perror("Serveur : probleme creation socket");
         exit(1);
@@ -51,7 +40,7 @@ int main(int argc, char *argv[])
     socklen_t lgCv = sizeof(struct sockaddr_in);
     int dsCv;
 
-    //FIN SERVEUR TCP
+    //FIN SERVEUR TCP 
 
 
     //MEMOIRE PARTAGER
@@ -102,7 +91,7 @@ int main(int argc, char *argv[])
 
             int pidChild = getpid();
             char m[1024];
-            struct dataClient *infoClient = malloc(sizeof(struct dataClient));
+            struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
 
             /*recupère la mémoire partagé */
             key_t key = ftok("sharedServer", 100);
@@ -134,6 +123,7 @@ int main(int argc, char *argv[])
             }
             printf("Bonjour %s ! \n", buffer);
 
+
             while (1) 
             {
 
@@ -146,8 +136,9 @@ int main(int argc, char *argv[])
                 exit(1);
             }
                 printf("Serveur : a envoyé : <%s> \n",m);
-                printf("data ville %s\n",dataInit[0].ville);
-            }
+                //printf("data ville %s\n",dataInit[0].site);
+                affichageEtat(dataInit);
+            } 
 
               
         }
@@ -165,4 +156,4 @@ int main(int argc, char *argv[])
     close(ds);
     printf("Serveur : je termine\n");
     exit(0);
-}
+} 
