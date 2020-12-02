@@ -122,59 +122,31 @@ int main(int argc, char *argv[])
 
             printf("Server : Mise en place de la memoire partagé + du sémaphore dans le child\n");
 
-            if (RecvFunction(dsCv, m, sizeof(m)) < 1)
-            {
-                close(dsCv);
-                close(ds);
-                printf("Client %i : erreur au calcul de la taille du message \n", ds);
-                exit(1);
-            }
-            char *buffer = malloc(sizeof(char) * (taille + 1));
 
-            int err = recvType(dsCv, buffer, taille);
-
-            if (err < 1)
+            char *buffer = malloc(sizeof(char) * 21);
+            if (recvAll(dsCv,buffer)<1)
             {
+                printf("Client %i : erreur nom irrécuparable", ds);
                 free(buffer);
                 close(dsCv);
                 close(ds);
-                printf("Client %i : erreur nom irrécuparable", ds);
                 exit(1);
             }
-
             printf("Bonjour %s ! \n", buffer);
 
-            while (1)
+            while (1) 
             {
-                char m[1024];
 
-                //la taille change de valeur après le recvType
-                int taille = 0;
-                if (recvType(dsCv, m, sizeof(m)) < 1)
-
-                { 
-                    close(dsCv);
-                    close(ds);
-                    exit(1);
-                }
-
-                buffer = malloc(sizeof(char) * (taille + 1));
-
-                //Le buffer récupère le message après le recvType, elle utilisa la taille
-                //au dessus pour etre sure de prendre exactement ce qu'il faut
-                int err = recvType(dsCv, buffer, taille);
-
-                if (err < 1)
-                { //semctl(idSemaphore,5,SETVAL,semctl(idSemaphore,5,GETVAL) -1);
-                    free(buffer);
-                    close(dsCv);
-                    close(ds);
-                    exit(1);
-                }
-
-                //printf("Serveur : j'ai reçu %d octet(s) \n", err * taille);
-                printf("Serveur : a envoyé : <%s> \n",buffer);
-                printf("data ville %s",dataInit[0].ville);
+            if (recvAll(dsCv,m)<1)
+            {
+                printf("Client %i : erreur nom irrécuparable", ds);
+                free(buffer);
+                close(dsCv);
+                close(ds);
+                exit(1);
+            }
+                printf("Serveur : a envoyé : <%s> \n",m);
+                printf("data ville %s\n",dataInit[0].ville);
             }
 
               

@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <sys/sem.h>
 #include <pthread.h>
+#include <ctype.h>
 
 //Quelques couleur pour la visibilité
 #define RED   "\x1B[31m"
@@ -27,6 +28,24 @@ union semun {
     unsigned short  *array;  /* Tableau pour GETALL, SETALL */
     struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
 };
+
+int isInt(char * msg){
+    int size = strlen(msg);
+    int mult = 1;
+    int number = 0;
+
+    for (int i = size-1; i > -1; --i)//je vais de la droite vers la gauche
+    {
+        if(isdigit(msg[i])){
+            number = number + ((msg[i] - 48) * mult); //ex : number = number (char '5' - 48) * 1 sachant que int('5') = 5+48
+            mult = mult * 10; //je change de de mutiple  15  = 5*1 + 1*10
+       }
+
+       else
+        return -1;
+    }
+    return number;
+}
 
 
 int taille = 5; //Pour plus de modularité plus tard
@@ -85,51 +104,6 @@ printf(RED"|||| POUR TOUTE DEMANDE VEUILLEZ LIRE NOTRE DOCUMENTATION |||| \n" RE
 
 
  
-//un recv classique , les lock/cond son à ajouter je pense
-int recvType(int addr,char* s,int taille){
-    int nbOctetRecu = 0; // Nombre d'octets reçus au total
-    int nbrecv = 0; // Nombre d'octets reçus à chaque tour de boucle
-    while(nbOctetRecu < taille){
-        nbrecv = recv(addr,s+nbOctetRecu,taille-nbOctetRecu,0);
-        switch(nbrecv){
-            case -1 : 
-                return -1;
-            
-            case 0 :  
-                return 0;
-            
-            default :
-                nbOctetRecu = nbOctetRecu + nbrecv;
-                break;
-        }
-    }
-    return 1;
-}
-
-
-
-//Un send classique qui indiquera si le changement se fais sur le cpu ou les go (type)
-int sendType(int addr, void* msg,int size,char type[10]){
-    int nbSend = 0;
-    int returnSend = 0;
-    while (nbSend < size){
-            returnSend = send(addr,msg+nbSend,size-nbSend,0);
-            switch(returnSend){
-        
-             case -1 : 
-                 perror("Client: erreur lors de l'envoi:"); 
-                 return -1;
-            
-             case 0 :  
-                 printf("Client: serveur déconnecté \n"); 
-                 return 0;
-                 default :
-                    nbSend = nbSend + returnSend;
-                    break;
-        }
-    }
-    return 1;
-}
 
 int sendFunction(int dsClient, char *message, int taille) {
     int value = 0;
@@ -171,22 +145,39 @@ int RecvFunction(int dsClient, char *reponse, int taille) {
     return 1;
 }
 
+int sendAll(int socket,char * m){
+    int size = strlen(m);
+    int returnSend; 
 
+    if(sendFunction(socket, (char*)&size, sizeof(size))<1){
+        printf("sendSize \n");
+        return -1;}
 
+    if(sendFunction(socket, m, size)<1){
+        printf("sendMsg\n");
+        return -1;}
+    return 1;
 
-/*int sendStruct(int addr, struct serverState * sState, int position,int type){
-    int size;
-    int returnInfo;
+}
 
-    switch(type){
-        case 1 : if(returnInfo = sendType(addr,&sState->city[position],sizeof(int),"ville")<1){
-            return -1;
-        }
-        case 2 : if(returnInfo = sendType(addr,&sState->cpu[position],sizeof(int),"cpu")<1){
-            return -1;
-        }
-    }
-    printf("A envoyer un message de type %i \n",type );
-    return type;
-}*/
+int recvAll(int socket,char * msg){
+    int size =0;
+    int returnSend; 
+
+    if(RecvFunction(socket, (char*)&size, sizeof(size))<1){
+        printf("recvSize \n");
+        return -1;}
+
+    char * buffer = malloc(sizeof(char) * (size + 1));
+
+    if(RecvFunction(socket, buffer, size)<1){
+        printf("recvMsg \n");
+        return -1;}
+
+   // printf("Serveur : %s a envoyé : <%s> \n", client.name, buffer);
+
+    strcpy(msg, buffer);//enregiste le message dans la variable msg
+    return 1;
+
+}
 

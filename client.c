@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
     printf("Client : demande de connexion reussie \n");
-    char m[1501];
 
     //INITIALISATION DU CLIENT
     char name[20];
@@ -57,7 +56,7 @@ int main(int argc, char *argv[])
 
     int taille = strlen(name);
 
-    if (sendFunction(ds, name, sizeof(name)) < 1)
+    if (sendAll(ds, name) < 1)
     {
         close(ds);
         exit(1);
@@ -81,6 +80,8 @@ int main(int argc, char *argv[])
 
     printf("Client : avant boucle \n"); 
 
+        char m[1501];
+
     while (1)
     {
 
@@ -92,21 +93,11 @@ int main(int argc, char *argv[])
         fgets(m, sizeof(m), stdin);
         m[strlen(m) - 1] = '\0'; //retirer le saut de ligne \n parce que j'appuie sur entrer
 
-        int taille = strlen(m);
-
-        if (sendFunction(ds, m, sizeof(m)) < 1)
+        if (sendAll(ds, m) < 1)
         {
-            close(ds);
-            exit(1);
+        close(ds);
+        exit(1);
         }
-
-        if (sendFunction(ds, m, sizeof(m)) < 1)
-        {
-            close(ds);
-            exit(1);
-        }
-
-        printf("Client : j'ai déposé un message de %lu octets\n", strlen(m));
     }
 
     close(ds);
