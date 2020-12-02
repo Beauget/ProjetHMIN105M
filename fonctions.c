@@ -147,4 +147,56 @@ int recvAll(int socket,char * msg){
     return 1;
 
 }
+int positionSite(struct dataStruct * data, char * site){
+    for (int i = 0; i < taille; ++i)
+    {
+        if( strcmp(data[i].site,site)==0){
+            return i;
+        }
+    }
+    return -1;
+}
 
+int lSharedSize(struct LShared * l){
+    /*
+    PERMET DE CONNAITRE LA TAILLE DE LA LISTE AFIN DE POUVOIR SIMULER LE ADD DANS UNE ARRAYLIST
+    */
+    return 0;
+}
+
+/*Diminue le nombre de de go et cpu dans la structure*/
+void actionExclu(struct dataStruct* data, char * site, char * type, int value){
+    int position = positionSite(data,site);
+
+    if (strcmp(type,"CPU")==0)
+    {
+        data[position].go = data[position].go - value;
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        data[position].cpu = data[position].cpu - value;
+    }
+}
+
+/*Ajoute le client dans la structure partagé*/
+void actionShared(struct dataStruct* data,char * site, char * name, char * type, int value){
+    int position = positionSite(data,site);    
+    struct LShared l;
+    strcpy(l.name , name);
+    l.quantity = value;
+
+
+    if (strcmp(type,"GO")==0)
+    {   
+        int size = lSharedSize(data[position].LSGo);
+        data[position].LSGo[size]= l;
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        int size = lSharedSize(data[position].LSCpu);
+        data[position].LSCpu[size] = l;
+    }
+
+}

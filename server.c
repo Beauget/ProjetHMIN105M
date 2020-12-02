@@ -121,24 +121,24 @@ int main(int argc, char *argv[])
                 close(ds);
                 exit(1);
             }
-            printf("Bonjour %s ! \n", buffer);
+            printf(GRN"Bonjour %s ! \n"RESET, buffer);
 
 
             while (1) 
             {
 
-            if (recvAll(dsCv,m)<1)
-            {
-                printf("Client %i : erreur nom irrécuparable", ds);
-                free(buffer);
-                close(dsCv);
-                close(ds);
-                exit(1);
-            }
+                if (recvAll(dsCv,m)<1)
+                {
+                    printf("Client %i : erreur nom irrécuparable", ds);
+                    free(buffer);
+                    close(dsCv);
+                    close(ds);
+                    exit(1);
+                }
                 printf("Serveur : a envoyé : <%s> \n",m);
-                //printf("data ville %s\n",dataInit[0].site);
                 affichageEtat(dataInit);
-            } 
+                printf("data ville %s : %i\n",dataInit[0].site,positionSite(dataInit,dataInit[1].site));
+            }  
 
               
         }

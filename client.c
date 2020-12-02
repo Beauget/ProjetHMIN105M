@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     key_t key = ftok("shmfile.txt", 100);
     int shmid = shmget(key, sizeof(struct dataStruct) * 5, 0666 | IPC_CREAT);
     struct dataStruct *ptrdata;
-
+ 
     //FIN MEMOIRE PARTAGER
     
 
