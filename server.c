@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
             if ((shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT)) < 0)
                 perror("Serveur : cannot shmget"); 
 
-
+ 
             if (shmid < 0)
             {
                 perror("Serveur : shmid <0");
@@ -166,7 +166,8 @@ int main(int argc, char *argv[])
             affichageClient(client);
 
             while (1) 
-            {
+            {  
+                affichageEtat(dataInit);
 
                 if (recvAll(dsCv,m)<1)
                 {
@@ -175,15 +176,48 @@ int main(int argc, char *argv[])
                     close(dsCv);
                     close(ds);
                     exit(1);
+                    } 
+
+                int nb = isInt(m);
+                printf("%i requête(s) arrivent !\n", nb );
+
+                char recv[3][20];
+                struct recvStruct * recvS =  malloc(sizeof(struct clientStruct)*nb);
+
+                for (int i = 0; i < nb; ++i)
+                {
+                for (int j = 0; j < 3; ++j)
+                {
+                    if (recvAll(dsCv,m)<1)
+                    {
+                        printf("Client %i : irrécuparable", ds);
+                        free(buffer);
+                        free(recvS);
+                        close(dsCv);
+                        close(ds);
+                        exit(1);
+                    }
+                    printf("Serveur : a envoyé : <%s> \n",m);
+                    strcpy(recv[j],m);
+                    
+                }  
+                //printf("data ville %s : %i\n",dataInit[0].site,positionSite(dataInit,dataInit[1].site));
+
+                //int size = lSharedSize(dataInit[0].LSGo);
+                //printf("%i\n",size );
+
+                strcpy(recvS[i].name,buffer);
+                strcpy(recvS[i].site,recv[0]);
+                strcpy(recvS[i].type,recv[1]);
+                recvS[i].value= isInt(recv[2]);
+
+                printf("%s\n",recvS[i].name);
+                printf("%s\n",recvS[i].site);
+                printf("%s\n",recvS[i].type);
+                printf("%i\n",recvS[i].value);
                 }
-                printf("Serveur : a envoyé : <%s> \n",m);
-                affichageEtat(dataInit);
-                printf("data ville %s : %i\n",dataInit[0].site,positionSite(dataInit,dataInit[1].site));
-
-                //printf("%s\n", );
-            }  
-
-              
+            
+            }
         }
         if (child == parent)
         {

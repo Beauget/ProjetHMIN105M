@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     struct clientStruct client;   
     initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
     affichageClient(client);
-    
+     
 
     printf("Client : avant boucle \n"); 
 
@@ -81,31 +81,48 @@ int main(int argc, char *argv[])
 
     char m[1501];
     initTaille();
-
+     int size=0;
+   
     while (1)
-    {   
-        int size = lExcluSize(client.exclu);
+    {  
 
         if (size<0)
         {
             printf("Vous avez atteins le nombre maximum de réservations\n");
         }
 
-        else actionExcluClient(&client, size,"CPU","Site",5);
-        
+        /*size = lExcluSize(client.exclu);
+        actionExcluClient(&client, size,"CPU","Site",5);
+
+        printf("taille de la liste %i \n",size);
+
+        size = lExcluSize(client.exclu);
+
+        suppressionExcluClient(&client,0,size);
+         
+        */
+
 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         ptrdata = shmat(shmid, NULL, 0);
         affichageEtat(ptrdata);
 
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);
+
+        printf("Combien de requêtes?\n");
         fgets(m, sizeof(m), stdin);
         m[strlen(m) - 1] = '\0'; //retirer le saut de ligne \n parce que j'appuie sur entrer
 
-        if (sendAll(ds, m) < 1)
+        if (isInt(m)<0)
         {
-        close(ds);
-        exit(1);
+        printf("Mettre un chiffre\n");
+        }
+
+        else{
+            int nbrRequetes = isInt(m);
+            if (sendAll(client.socket, m) < 1)
+                return -1;
+            SendClient(ptrdata,&client,nbrRequetes);
         }
     }
 

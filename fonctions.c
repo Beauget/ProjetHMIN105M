@@ -39,7 +39,7 @@ void InitDataFromFile(struct dataStruct *data) {
            data[i].maxGo = data[i].go;
            data[i].maxCpu = data[i].cpu;
 
-           for (int j = 0; j < 100; ++j)
+           for (int j = 0; j < 101; ++j)
            {
                strcpy(data[i].LSGo[j].name,"");
                data[i].LSGo[j].quantity = 0;
@@ -62,7 +62,7 @@ void initClient(struct clientStruct * client,char * name,int socket, int socketS
     strcpy(client->port,port);
     client->data = data;
 
-    for (int i = 0; i < 100; ++i)
+    for (int i = 0; i < 101; ++i)
     {
         strcpy(client->exclu[i].site,"");
         strcpy(client->exclu[i].type,"");
@@ -216,6 +216,24 @@ int maxLShared(struct LShared * l){
     return max;
 }
 
+int lSharedPosition(struct LShared * l,char * name){
+    int size =  lSharedSize(l);
+
+    for (int i = 0; i < size; ++i)
+    {
+        if (strcmp(l[i].name,name)==0 && strlen(name)!=0)
+            return i;
+    }
+    return -1;
+}
+
+void suppressionShared(struct LShared * l, int position, int size){
+    for (int i = 0; i < size; ++i)
+    {
+        l[i]=l[i+1];
+    }
+}
+
 /*DONNE LA LONGEUR DE LA LISTE, RENVOIE -1 SI LA LISTE EST PLEINE */
 int lExcluSize(struct LExclu * l){
     for (int i = 0; i < 100; ++i)
@@ -238,7 +256,7 @@ int lExcluPosition(struct LExclu * l,char * type, char * site){
     return -1;
 }
 
-/*MET A JOUR LA STRUCTURE PARTAGER EN DIMINUANT LE NOMBRE DE DE GO/CPU */
+/*MET A JOUR LA STRUCTURE EXLUSIF EN DIMINUANT LE NOMBRE DE DE GO/CPU */
 void actionExclu(struct dataStruct* data, char * site, char * type, int value){
     int position = positionSite(data,site);
 
@@ -253,11 +271,33 @@ void actionExclu(struct dataStruct* data, char * site, char * type, int value){
     }
 }
 
+/*MET A JOUR LA STRUCTURE EXCLUSIF EN AJOUTANT LE NOMBRE DE DE GO/CPU */
+void suppressionExclu(struct dataStruct* data, char * site, char * type, int value){
+    int position = positionSite(data,site);
+
+    if (strcmp(type,"GO")==0)
+    {   
+        data[position].go = data[position].go + value;
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        data[position].cpu = data[position].cpu + value;
+    }
+}
+
 /*MET A JOUR LA STRUCTURE CLIENT*/
-void actionExcluClient(struct clientStruct * client,int position, char * type, char * site, int value){
-    strcpy(client->exclu[position].type,type);
-    strcpy(client->exclu[position].site,site);
-    client->exclu[position].quantity= value;    
+void actionExcluClient(struct clientStruct * client,int size, char * type, char * site, int value){
+    strcpy(client->exclu[size].type,type);
+    strcpy(client->exclu[size].site,site);
+    client->exclu[size].quantity= value;    
+}
+void suppressionExcluClient(struct clientStruct * client,int position, int size){
+    for (int i = position; i < size; ++i)
+    {
+        client->exclu[i] = client->exclu[i+1] ;
+    }
+    //la magie est que les tableau sont de taille 101 donc forcement il y aura un site ="" et quantity = 0
 }
 
 /*ADD DANS LA LISTE DES RESERVATION PARTAGER DANS LA STRUCTURE PARTAGER*/
@@ -282,8 +322,56 @@ void actionShared(struct dataStruct* data,char * site, char * name, char * type,
 
 }
 
+void suppressionSharedType(struct dataStruct* data,char * site,char * type,int pos,int size){
+    int position = positionSite(data,site);  
+    if (strcmp(type,"GO")==0)
+    {   
+        suppressionShared(data[position].LSGo, pos, size);
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        suppressionShared(data[position].LSCpu, pos, size);
+    }
+}
+
+
 void *triggerAffichage(void *param) {
 }
 
 void *Reservation(void *param) {
+}
+
+int SendClient(struct dataStruct* data, struct clientStruct * client,int size){
+    char m[20];
+    int nbrRequetes;
+    char site[20];
+    char type[20];
+    char value[20];
+
+
+
+        for (int i = 0; i <size; ++i)
+        {   printf("Requête : %i\n",i+1 ); 
+            printf("Site,type,value\n");
+            fgets(m, sizeof(m), stdin);
+            m[strlen(m) - 1] = '\0';
+            strcpy(site,m);
+            if (sendAll(client->socket, m) < 1)
+                return -1;
+
+            fgets(m, sizeof(m), stdin);
+            m[strlen(m) - 1] = '\0';
+            strcpy(type,m);
+            if (sendAll(client->socket, m) < 1)
+                return -1;
+
+            fgets(m, sizeof(m), stdin);
+            m[strlen(m) - 1] = '\0';
+            strcpy(value,m);
+            if (sendAll(client->socket, m) < 1)
+                return -1;          
+        }
+    
+    return 0;
 }

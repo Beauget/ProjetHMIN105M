@@ -43,7 +43,7 @@ struct clientStruct {
     int socketServer;
     char ip[20];
     char port[20];
-    struct LExclu exclu[100];
+    struct LExclu exclu[101];
     struct dataStruct * data;
 }dataClient;
 
@@ -52,9 +52,18 @@ struct clientStruct {
     char site[20];
     int maxGo;
     int go;
-    struct LShared LSGo[100];
+    struct LShared LSGo[101];
 
     int maxCpu;
     int cpu;
-    struct LShared LSCpu[100];
+    struct LShared LSCpu[101];
 }dataStruct;
+
+struct recvStruct
+{
+    char name[40];
+    char type[20];
+    char site[20];
+    int value;
+    
+}recvStruct;
