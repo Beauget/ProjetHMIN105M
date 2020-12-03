@@ -65,7 +65,8 @@ void initClient(struct clientStruct * client,char * name,int socket, int socketS
     for (int i = 0; i < 100; ++i)
     {
         strcpy(client->exclu[i].site,"");
-       client->exclu[i].quantity = 0;
+        strcpy(client->exclu[i].type,"");
+        client->exclu[i].quantity = 0;
     }
 }
 
@@ -189,6 +190,7 @@ int positionSite(struct dataStruct * data, char * site){
     return -1;
 }
 
+/*DONNE LA LONGEUR DE LA LISTE, RENVOIE -1 SI LA LISTE EST PLEINE */
 int lSharedSize(struct LShared * l){
     for (int i = 0; i < 100; ++i)
     {
@@ -198,6 +200,23 @@ int lSharedSize(struct LShared * l){
     return -1;
 }
 
+/*RENVOIE LA QUANTITY MAX DE LA LISTE PARTAGER*/
+int maxLShared(struct LShared * l){
+    int max = 0;
+    int size = lSharedSize(l);
+
+    if (size==0)
+        return max;
+
+    for (int i = 0; i < size; ++i)
+    {
+        if (max<l[i].quantity)       
+            max = l[i].quantity;
+    }
+    return max;
+}
+
+/*DONNE LA LONGEUR DE LA LISTE, RENVOIE -1 SI LA LISTE EST PLEINE */
 int lExcluSize(struct LExclu * l){
     for (int i = 0; i < 100; ++i)
     {
@@ -207,7 +226,19 @@ int lExcluSize(struct LExclu * l){
     return -1;
 }
 
-/*Diminue le nombre de de go et cpu dans la structure*/
+/*RENVOIE LA POSITION DU SITE SI IL EST DANS LA LISTE EXCLUSIF -1 SINON*/
+int lExcluPosition(struct LExclu * l,char * type, char * site){
+    int size = lExcluSize(l);
+
+    for (int i = 0; i < size; ++i)
+    {
+        if (strcmp(l[i].type,type)==0 && strcmp(l[i].site,site)==0)
+            return i;
+    }
+    return -1;
+}
+
+/*MET A JOUR LA STRUCTURE PARTAGER EN DIMINUANT LE NOMBRE DE DE GO/CPU */
 void actionExclu(struct dataStruct* data, char * site, char * type, int value){
     int position = positionSite(data,site);
 
@@ -222,7 +253,14 @@ void actionExclu(struct dataStruct* data, char * site, char * type, int value){
     }
 }
 
-/*Ajoute le client dans la structure partagé*/
+/*MET A JOUR LA STRUCTURE CLIENT*/
+void actionExcluClient(struct clientStruct * client,int position, char * type, char * site, int value){
+    strcpy(client->exclu[position].type,type);
+    strcpy(client->exclu[position].site,site);
+    client->exclu[position].quantity= value;    
+}
+
+/*ADD DANS LA LISTE DES RESERVATION PARTAGER DANS LA STRUCTURE PARTAGER*/
 void actionShared(struct dataStruct* data,char * site, char * name, char * type, int value){
     int position = positionSite(data,site);    
     struct LShared l;

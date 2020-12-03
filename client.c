@@ -77,11 +77,22 @@ int main(int argc, char *argv[])
 
     printf("Client : avant boucle \n"); 
 
+    //int x = 0;
+
     char m[1501];
     initTaille();
 
     while (1)
-    {
+    {   
+        int size = lExcluSize(client.exclu);
+
+        if (size<0)
+        {
+            printf("Vous avez atteins le nombre maximum de réservations\n");
+        }
+
+        else actionExcluClient(&client, size,"CPU","Site",5);
+        
 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         ptrdata = shmat(shmid, NULL, 0);

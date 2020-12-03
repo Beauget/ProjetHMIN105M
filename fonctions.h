@@ -26,7 +26,7 @@
 #define RESET "\x1B[0m"
 
 struct LExclu
-{
+{   char type[20]; //Pas besoins de séparer les type dans le exclusif, pas de calcul du max dessus!
 	char site[20];
 	int quantity;	
 }LExclu;
