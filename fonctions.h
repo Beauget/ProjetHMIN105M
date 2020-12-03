@@ -10,7 +10,7 @@
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sys/socket.h>
-#include <sys/types.h>
+#include <sys/types.h> 
 #include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
@@ -41,8 +41,8 @@ struct clientStruct {
     char name[40];
     int socket;
     int socketServer;
-    char * ip;
-    char * port;
+    char ip[20];
+    char port[20];
     struct LExclu exclu[100];
     struct dataStruct * data;
 }dataClient;

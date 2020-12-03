@@ -127,14 +127,15 @@ int main(int argc, char *argv[])
         { //je fork
 
             int pidChild = getpid();
-            char m[1024];
-            struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
+            char m[600];
+
+            //struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
 
             /*recupère la mémoire partagé */
             key_t key = ftok("sharedServer", 100);
 
             if ((shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT)) < 0)
-                perror("Serveur : cannot shmget");
+                perror("Serveur : cannot shmget"); 
 
 
             if (shmid < 0)
@@ -158,15 +159,18 @@ int main(int argc, char *argv[])
                 close(ds);
                 exit(1);
             }
-            printf(GRN"Bonjour %s ! \n"RESET, buffer);
+            printf(GRN"Bonjour %s ! \n", buffer);
 
+            struct clientStruct client;
+            initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
+            affichageClient(client);
 
             while (1) 
             {
 
                 if (recvAll(dsCv,m)<1)
                 {
-                    printf("Client %i : erreur nom irrécuparable", ds);
+                    printf("Client %i : irrécuparable", ds);
                     free(buffer);
                     close(dsCv);
                     close(ds);
@@ -175,6 +179,8 @@ int main(int argc, char *argv[])
                 printf("Serveur : a envoyé : <%s> \n",m);
                 affichageEtat(dataInit);
                 printf("data ville %s : %i\n",dataInit[0].site,positionSite(dataInit,dataInit[1].site));
+
+                //printf("%s\n", );
             }  
 
               

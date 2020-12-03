@@ -38,6 +38,15 @@ void InitDataFromFile(struct dataStruct *data) {
            }
            data[i].maxGo = data[i].go;
            data[i].maxCpu = data[i].cpu;
+
+           for (int j = 0; j < 100; ++j)
+           {
+               strcpy(data[i].LSGo[j].name,"");
+               data[i].LSGo[j].quantity = 0;
+
+               strcpy(data[i].LSCpu[j].name,"");
+               data[i].LSCpu[j].quantity = 0;
+           }
         }
     }
     else {
@@ -45,6 +54,28 @@ void InitDataFromFile(struct dataStruct *data) {
     }
 }
 
+void initClient(struct clientStruct * client,char * name,int socket, int socketServer, char * ip ,char * port,struct dataStruct * data){
+    strcpy(client->name,name);
+    client->socket = socket;
+    client->socketServer = socketServer;
+    strcpy(client->ip,ip);
+    strcpy(client->port,port);
+    client->data = data;
+
+    for (int i = 0; i < 100; ++i)
+    {
+        strcpy(client->exclu[i].site,"");
+       client->exclu[i].quantity = 0;
+    }
+}
+
+void affichageClient(struct clientStruct client){
+    printf(GRN"%s : ",client.name);
+    printf("socketSend: %i ",client.socket );
+    printf("socketRecv %i ",client.socketServer );
+    printf("ip: %s ", client.ip );
+    printf("port: %s\n"RESET, client.port );
+}
 
 void affichageEtat(struct dataStruct* data) {
     printf(YEL"                 --- AFFICHAGE ETAT SYSTEME --- \n \n");
@@ -159,17 +190,28 @@ int positionSite(struct dataStruct * data, char * site){
 }
 
 int lSharedSize(struct LShared * l){
-    /*
-    PERMET DE CONNAITRE LA TAILLE DE LA LISTE AFIN DE POUVOIR SIMULER LE ADD DANS UNE ARRAYLIST
-    */
-    return 0;
+    for (int i = 0; i < 100; ++i)
+    {
+        if((strlen(l[i].name)==0) && (l[i].quantity==0)) //vérifie si le nom et vide et la quantité est égale à 0;
+            return i;
+    }
+    return -1;
+}
+
+int lExcluSize(struct LExclu * l){
+    for (int i = 0; i < 100; ++i)
+    {
+        if((strlen(l[i].site)==0)&& (l[i].quantity==0)) //vérifie si le site et vide et la quantité est égale à 0;
+            return i;
+    }
+    return -1;
 }
 
 /*Diminue le nombre de de go et cpu dans la structure*/
 void actionExclu(struct dataStruct* data, char * site, char * type, int value){
     int position = positionSite(data,site);
 
-    if (strcmp(type,"CPU")==0)
+    if (strcmp(type,"GO")==0)
     {
         data[position].go = data[position].go - value;
     }

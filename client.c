@@ -13,11 +13,11 @@ int main(int argc, char *argv[])
 
     int ds = socket(PF_INET, SOCK_STREAM, 0);
 
-    if (ds == -1)
+    if (ds == -1) 
     {
         printf("Client : Problème avec la creation de la socket\n");
         exit(1);
-    }
+    } 
 
     printf("Client: creation de la socket : ok\n");
 
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    int socket = ds;
     char *ip = argv[1];
     char *port = argv[2];
     pthread_mutex_t lock;
@@ -68,6 +69,10 @@ int main(int argc, char *argv[])
     struct dataStruct *ptrdata;
  
     //FIN MEMOIRE PARTAGER
+
+    struct clientStruct client;   
+    initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
+    affichageClient(client);
     
 
     printf("Client : avant boucle \n"); 
