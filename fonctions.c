@@ -1,11 +1,12 @@
 #include "fonctions.h"
 
 
-union semun {
-    struct semid_ds *buf;    /* Tampon pour IPC_STAT, IPC_SET */
-    unsigned short  *array;  /* Tableau pour GETALL, SETALL */
-    struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
-};
+
+
+void initMutex(pthread_mutex_t verrou,pthread_cond_t cond) {
+    pthread_mutex_init(&verrou,NULL);
+    pthread_cond_init(&cond,NULL);
+}
 
 
 int nbLigne(FILE *file) {
@@ -199,4 +200,10 @@ void actionShared(struct dataStruct* data,char * site, char * name, char * type,
         data[position].LSCpu[size] = l;
     }
 
+}
+
+void *triggerAffichage(void *param) {
+}
+
+void *Reservation(void *param) {
 }

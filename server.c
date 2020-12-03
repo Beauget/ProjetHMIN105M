@@ -1,6 +1,13 @@
 #include "fonctions.c"
 
 
+union semun {
+    struct semid_ds *buf;    /* Tampon pour IPC_STAT, IPC_SET */
+    unsigned short  *array;  /* Tableau pour GETALL, SETALL */
+    struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
+};
+
+
 int main(int argc, char *argv[])
 {
 
@@ -12,7 +19,7 @@ int main(int argc, char *argv[])
 
     //SERVEUR TCP
     int ds = socket(PF_INET, SOCK_STREAM, 0);
-    if (ds == -1) 
+    if (ds == -1)  
     {
         perror("Serveur : probleme creation socket");
         exit(1);
@@ -44,9 +51,11 @@ int main(int argc, char *argv[])
 
 
     //MEMOIRE PARTAGER
+
+    initTaille();
     key_t key = ftok("sharedServer", 100);
      int shmid = shmget(key, sizeof(struct dataStruct)* taille, 0666 | IPC_CREAT);
-    if (shmid < 0)
+    if (shmid < 0) 
     {
         printf("Serveur : erreur création de mémoire partagé || %s", strerror(errno));
         exit(1);
@@ -60,6 +69,34 @@ int main(int argc, char *argv[])
     InitDataFromFile(dataInit);
 
     //FIN MEMOIRE PARTAGER
+
+    //SEMAPHORE (A VERIFIER)
+
+    key_t keySem = ftok("sharedSem.txt",10);
+    if(keySem == -1) {
+        printf("Erreur ftok sémaphore");
+        exit(1);
+    }
+
+    int idSem = semget(keySem,1,IPC_CREAT | 0666);
+    union semun egCtrl;
+    ushort Sem[1];
+
+    for(int i = 0; i < 1; i++) {
+        Sem[i] = 1;
+    }
+
+    egCtrl.array = Sem;
+
+    int initSem = semctl(idSem,0,SETALL,egCtrl);
+
+    struct sembuf op[] = {
+        { 0, -1 , SEM_UNDO}, //P
+        { 0, 1 , SEM_UNDO}, //V
+        { 0, 0 , SEM_UNDO}, //Z
+    };
+
+    //FIN SEMAPHORE
 
     int parent = getpid(); //afin de savoir qui est le parent
 
