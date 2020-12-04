@@ -65,6 +65,7 @@ struct clientStruct {
 struct recvStruct
 {
     char name[40];
+    int isExclu; //1 ou 0
     char type[20];
     char site[20];
     int value;

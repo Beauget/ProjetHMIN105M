@@ -83,25 +83,13 @@ int main(int argc, char *argv[])
     initTaille();
      int size=0;
    
-    while (1)
+    while (1) 
     {  
 
         if (size<0)
         {
             printf("Vous avez atteins le nombre maximum de réservations\n");
         }
-
-        /*size = lExcluSize(client.exclu);
-        actionExcluClient(&client, size,"CPU","Site",5);
-
-        printf("taille de la liste %i \n",size);
-
-        size = lExcluSize(client.exclu);
-
-        suppressionExcluClient(&client,0,size);
-         
-        */
-
 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         ptrdata = shmat(shmid, NULL, 0);
@@ -115,14 +103,18 @@ int main(int argc, char *argv[])
 
         if (isInt(m)<0)
         {
-        printf("Mettre un chiffre\n");
+        printf(YEL"Mettre un chiffre\n"RESET);
         }
 
         else{
-            int nbrRequetes = isInt(m);
-            if (sendAll(client.socket, m) < 1)
-                return -1;
-            SendClient(ptrdata,&client,nbrRequetes);
+            if (sendAll(client.socket, m) < 1){
+                printf(RED"Erreur à l'envoie du nombre de requêtes\n"RESET);
+            }
+            
+            if(SendClient(ptrdata,&client,m)<1)
+                printf(RED"Erreur pendant le send\n"RESET);
+            else
+                printf(GRN"Requêtes Envoyé !\n"RESET);
         }
     }
 

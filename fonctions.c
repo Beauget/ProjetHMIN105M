@@ -352,36 +352,159 @@ void suppressionSharedType(struct dataStruct* data,char * site,char * type,int p
 void *Reservation(void *param) {
 }
 
-int SendClient(struct dataStruct* data, struct clientStruct * client,int size){
+
+
+/*
+* FONCTIONS SEND COTÉ CLIENT
+*/
+
+
+int isExluSend(char * msg){
     char m[20];
-    int nbrRequetes;
+    fgets(m, sizeof(m), stdin);
+    m[strlen(m) - 1] = '\0';
+
+    if ((strcmp(m,"e")==0 ||strcmp(m,"E")==0||strcmp(m,"EXCLUSIF")==0||strcmp(m,"exclusif")==0)&&strlen(m)!=0)
+    {
+        strcpy(msg,"1");
+        return 1;
+    }
+
+    if ((strcmp(m,"p")==0 ||strcmp(m,"P")==0||strcmp(m,"PARTAGE")==0||strcmp(m,"partage")==0)&&strlen(m)!=0)
+    {
+        strcpy(msg,"0");
+        return 1;
+    }
+
+    return -1;
+
+}
+
+int siteSend(char * msg, struct dataStruct *data){
+    char m[20];
+    fgets(m, sizeof(m), stdin);
+    m[strlen(m) - 1] = '\0';
+
+    if(positionSite(data,m)<0){ //la ville n'existe pas
+        return -1;
+    }
+
+    strcpy(msg,m);
+    return 1;
+}
+
+int typeSend(char * msg){
+    char m[20];
+    fgets(m, sizeof(m), stdin);
+    m[strlen(m) - 1] = '\0';
+
+    if ((strcmp(m,"cpu")==0 ||strcmp(m,"CPU")==0||strcmp(m,"c")==0||strcmp(m,"C")==0)&&strlen(m)!=0)
+    {
+        strcpy(msg,"CPU");
+        return 1;
+    }
+
+    if ((strcmp(m,"go")==0 ||strcmp(m,"GO")==0||strcmp(m,"g")==0||strcmp(m,"G")==0)&&strlen(m)!=0)
+    {
+        strcpy(msg,"GO");
+        return 1;
+    }
+
+    return -1;
+}
+
+int valueSend(char * msg){
+    char m[20];
+    fgets(m, sizeof(m), stdin);
+    m[strlen(m) - 1] = '\0';
+
+    if (isInt(m)<1)
+    {
+        return -1;
+    }
+
+    strcpy(msg,m);
+    return 1;
+}
+
+
+int SendClient(struct dataStruct* data, struct clientStruct * client,char * size){
+    int nbrRequetes=isInt(size);
+    char isExlu[20];
     char site[20];
     char type[20];
     char value[20];
 
 
 
-        for (int i = 0; i <size; ++i)
-        {   printf("Requête : %i\n",i+1 ); 
-            printf("Site,type,value\n");
-            fgets(m, sizeof(m), stdin);
-            m[strlen(m) - 1] = '\0';
-            strcpy(site,m);
-            if (sendAll(client->socket, m) < 1)
-                return -1;
+    for (int i = 0; i <nbrRequetes; ++i)
+    {   printf("Requête : %i\n",i+1 ); 
+        //printf("exclu?,Site,type,value\n");
 
-            fgets(m, sizeof(m), stdin);
-            m[strlen(m) - 1] = '\0';
-            strcpy(type,m);
-            if (sendAll(client->socket, m) < 1)
-                return -1;
-
-            fgets(m, sizeof(m), stdin);
-            m[strlen(m) - 1] = '\0';
-            strcpy(value,m);
-            if (sendAll(client->socket, m) < 1)
-                return -1;          
+        printf(GRN"Exclusif(e/E) ou partagé(p/P)\n"RESET);
+        while(isExluSend(isExlu)<0){
+            printf(YEL"Exclusif(e/E) ou partagé(p/P)\n"RESET);
         }
+
+        printf(GRN"Quel ville ?\n"RESET);
+        while(siteSend(site,data)<0){
+            printf(YEL"Quel ville ?\n"RESET);
+        }
+
+        printf(GRN"Cpu(c/C) ou go (g/G) ?\n"RESET);
+        while(typeSend(type)<0){
+            printf(YEL"Cpu(c/C) ou go (g/G) ?\n"RESET);
+        }
+
+        printf(GRN"Combien ?\n"RESET);
+        while(valueSend(value)<0){
+            printf(YEL"Combien ?\n"RESET);
+        }
+
+        if (sendAll(client->socket, isExlu) < 1)
+            return -1;
+
+        if (sendAll(client->socket, site) < 1)
+            return -1;
+
+        if (sendAll(client->socket, type) < 1)
+            return -1;
+
+        if (sendAll(client->socket, value) < 1)
+            return -1;          
+    }
     
-    return 0;
+    return 1;
+}
+
+/*FONCTIONS RECV COTÉ SERVEUR*/
+int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
+    char m[20];
+    char recv[4][20];
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            if (recvAll(client.socketServer,m)<1)
+            {
+                printf("Client %s : erreur au recv", client.name);
+                return -1;
+            }
+            strcpy(recv[j],m);
+                    
+        }  
+
+        strcpy(recvS[i].name,client.name);
+        recvS[i].isExclu=isInt(recv[0]);
+        strcpy(recvS[i].site,recv[1]); 
+        strcpy(recvS[i].type,recv[2]);
+        recvS[i].value= isInt(recv[3]);
+
+        printf("Requête %i de %s : ",i+1,recvS[i].name);
+        printf("Exlusif?:%i ",recvS[i].isExclu);
+        printf("%s ",recvS[i].site);
+        printf("%s ",recvS[i].type);
+        printf("%i\n",recvS[i].value); 
+    }
+    return 1;
 }

@@ -182,51 +182,24 @@ int main(int argc, char *argv[])
 
                 if (recvAll(dsCv,m)<1)
                 {
-                    printf("Client %i : irrécuparable", ds);
+                    printf("Client %s : err nombre de requêtes", buffer);
                     free(buffer);
                     close(dsCv);
                     close(ds);
                     exit(1);
-                    } 
+                } 
 
+                printf("%s requête(s) arrivent !\n", m );
                 int nb = isInt(m);
-                printf("%i requête(s) arrivent !\n", nb );
-
-                char recv[3][20];
                 struct recvStruct * recvS =  malloc(sizeof(struct clientStruct)*nb);
 
-                for (int i = 0; i < nb; ++i)
+                if (recvServer(client,recvS,isInt(m))<0)
                 {
-                for (int j = 0; j < 3; ++j)
-                {
-                    if (recvAll(dsCv,m)<1)
-                    {
-                        printf("Client %i : irrécuparable", ds);
-                        free(buffer);
-                        free(recvS);
-                        close(dsCv);
-                        close(ds);
-                        exit(1);
-                    }
-                    printf("Serveur : a envoyé : <%s> \n",m);
-                    strcpy(recv[j],m);
-                    
-                }  
-                //printf("data ville %s : %i\n",dataInit[0].site,positionSite(dataInit,dataInit[1].site));
-
-                //int size = lSharedSize(dataInit[0].LSGo);
-                //printf("%i\n",size );
-
-                strcpy(recvS[i].name,buffer);
-                strcpy(recvS[i].site,recv[0]);
-                strcpy(recvS[i].type,recv[1]);
-                recvS[i].value= isInt(recv[2]);
-
-                printf("%s\n",recvS[i].name);
-                printf("%s\n",recvS[i].site);
-                printf("%s\n",recvS[i].type);
-                printf("%i\n",recvS[i].value);
+                    printf("Client %s : err au recv\n", buffer );
+                    free(recvS);
                 }
+ 
+                free(recvS);
             
             }
         }
