@@ -31,6 +31,8 @@ struct LExclu
 	int quantity;	
 }LExclu;
 
+
+
 struct LShared
 {
 	char name[40];
@@ -50,6 +52,7 @@ struct clientStruct {
 
  struct dataStruct {
     char site[20];
+    int id;
     int maxGo;
     int go;
     struct LShared LSGo[101];
@@ -67,3 +70,16 @@ struct recvStruct
     int value;
     
 }recvStruct;
+
+struct Sem {
+    int idSem;
+    struct sembuf *op;
+}Sem;
+
+struct gestionSys {
+    struct dataStruct *etat;
+    struct Sem *info;
+    pthread_mutex_t verrou;
+    pthread_cond_t cond;
+
+}gestionSys;

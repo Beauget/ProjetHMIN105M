@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
 
     //MEMOIRE PARTAGER
 
-    key_t key = ftok("shmfile.txt", 100);
-    int shmid = shmget(key, sizeof(struct dataStruct) * 5, 0666 | IPC_CREAT);
+    key_t key = ftok("sharedServer.txt", 100);
+    int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
     struct dataStruct *ptrdata;
  
     //FIN MEMOIRE PARTAGER

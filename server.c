@@ -53,10 +53,10 @@ int main(int argc, char *argv[])
     //MEMOIRE PARTAGER
 
     initTaille();
-    key_t key = ftok("sharedServer", 100);
-     int shmid = shmget(key, sizeof(struct dataStruct)* taille, 0666 | IPC_CREAT);
+    key_t key = ftok("sharedServer.txt", 100);
+     int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
     if (shmid < 0) 
-    {
+    { 
         printf("Serveur : erreur création de mémoire partagé || %s", strerror(errno));
         exit(1);
     }
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
     //FIN MEMOIRE PARTAGER
 
-    //SEMAPHORE (A VERIFIER)
+    //SEMAPHORE (Actuellement 1 sémaphore par site Init à 1)
 
     key_t keySem = ftok("sharedSem.txt",10);
     if(keySem == -1) {
@@ -78,23 +78,34 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    int idSem = semget(keySem,1,IPC_CREAT | 0666);
-    union semun egCtrl;
-    ushort Sem[1];
-
+    int idSem = semget(keySem,taille,IPC_CREAT | 0666);
+    union semun semCtrl;
+    ushort tabSem[1];
     for(int i = 0; i < 1; i++) {
-        Sem[i] = 1;
+        tabSem[i] = 1;
+    }
+    semCtrl.array = tabSem;
+    if(idSem == -1) {
+        perror("Server : erreur création sémaphore");
+        exit(1);
     }
 
-    egCtrl.array = Sem;
-
-    int initSem = semctl(idSem,0,SETALL,egCtrl);
+    int initSem = semctl(idSem,0,SETALL,semCtrl);
 
     struct sembuf op[] = {
-        { 0, -1 , SEM_UNDO}, //P
-        { 0, 1 , SEM_UNDO}, //V
-        { 0, 0 , SEM_UNDO}, //Z
+        {0, -1, SEM_UNDO},
+        {0, 1, SEM_UNDO},
+        {0, 0, SEM_UNDO}
     };
+
+    struct Sem gestionSem;
+    gestionSem.idSem = idSem;
+    gestionSem.op = op;
+
+    struct gestionSys paramGestionSys;
+    paramGestionSys.info = &gestionSem;
+    initMutex(paramGestionSys.verrou,paramGestionSys.cond);
+    printf("Sémaphore mis en place \n");
 
     //FIN SEMAPHORE
 

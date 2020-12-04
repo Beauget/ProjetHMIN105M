@@ -36,6 +36,7 @@ void InitDataFromFile(struct dataStruct *data) {
                printf("Erreur fscanf !");
                exit(0);
            }
+           data[i].id = i;
            data[i].maxGo = data[i].go;
            data[i].maxCpu = data[i].cpu;
 
@@ -85,6 +86,14 @@ for(int i = 0; i < taille;i++) {
 }
 printf(RED"|||| POUR TOUTE DEMANDE VEUILLEZ LIRE NOTRE DOCUMENTATION |||| \n" RESET);
 
+}
+
+void affichageEtatMaj(struct dataStruct* data) {
+        printf(YEL"                 --- MISE A JOURS SYSTEME --- \n \n");
+        printf(RED" Une réservation a eu lieu, l'état du système a changer \n \n");
+    for(int i = 0; i < taille;i++) {
+        printf(YEL"Site : %s, GO DISPONIBLE : %i/%i, CPU DISPONIBLE : %i/%i \n",data[i].site,data[i].go,data[i].maxGo,data[i].cpu,data[i].maxCpu);
+    }
 }
 
 
@@ -336,8 +345,9 @@ void suppressionSharedType(struct dataStruct* data,char * site,char * type,int p
 }
 
 
-void *triggerAffichage(void *param) {
-}
+
+
+
 
 void *Reservation(void *param) {
 }
