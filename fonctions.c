@@ -479,19 +479,15 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
 
         if (sendAll(client->socket, isExclu) < 1)
             return -1;
-        printf("EXclu\n");
 
         if (sendAll(client->socket, site) < 1)
             return -1;
-        printf("SITE\n");
 
         if (sendAll(client->socket, type) < 1)
             return -1;
-        printf("TYPE\n");
 
         if (sendAll(client->socket, value) < 1)
             return -1;
-        printf("VALUE\n");
 
         free(isExclu);
         free(site);
@@ -534,4 +530,66 @@ int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
         printf("%i\n",recvS[i].value); 
     }
     return 1;
+}
+
+int restantType(struct dataStruct * data,int position,char * type, int value){
+    if (strcmp(type,"GO")==0)
+    {   
+        return(data[position].go-value);
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        return(data[position].cpu-value);
+    }
+}
+
+
+
+
+
+
+
+
+
+void actionExcluAll(struct dataStruct * data, struct clientStruct * client,struct recvStruct recvS){
+    int size = lExcluSize(client->exclu);
+
+    actionExclu(data, recvS.site, recvS.type, recvS.value);
+    actionExcluClient(client,size, recvS.type, recvS.site,recvS.value);
+}
+
+void actionSharedAll(struct dataStruct * data, struct clientStruct * client,struct recvStruct recvS){
+    int position= positionSite(data,recvS.site);
+
+    int oldMax = maxLSharedType(data,position,recvS.type);
+    printf("%i\n", oldMax);
+
+    actionShared(data,recvS.site, client->name, recvS.type, recvS.value);
+
+    int newMax = maxLSharedType(data,position,recvS.type);
+    printf("%i\n", newMax);
+
+    if (oldMax<newMax)
+    {
+        actionExclu(data, recvS.site, recvS.type, (newMax-oldMax));
+    }
+
+}
+
+
+
+
+void actionAll(struct dataStruct * data, struct clientStruct * client,struct recvStruct * recvS,int size){
+    for (int i = 0; i < size; ++i)
+    {
+        if (recvS[i].isExclu==1)
+        {
+            actionExcluAll(data,client,recvS[i]);
+        }
+
+        if (recvS[i].isExclu==0){
+            actionSharedAll(data,client,recvS[i]);
+        }
+    }
 }

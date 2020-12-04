@@ -203,35 +203,13 @@ int main(int argc, char *argv[])
                 free(msg);
 
                 /*ON BLOQUE ET ON VERIFIE SI C'EST POSSIBLE*/
-                //
+                // 
                 //
                 //
                 if(recvServer(client,recvS,isInt(msg))>0){
                 
-                for (int i = 0; i < nb; ++i)
-                {
-                    if (recvS[i].isExclu==1)
-                    {
-                        actionExclu(dataInit, recvS[i].site, recvS[i].type, recvS[i].value);
-                        actionExcluClient(&client,lExcluSize(client.exclu), recvS[i].type, recvS[i].site,recvS[i].value);
-                    }
-
-                    if (recvS[i].isExclu==0){
-                        int oldMax = maxLSharedType(dataInit,positionSite(dataInit,recvS[i].site),recvS[i].type);
-                        actionShared(dataInit,recvS[i].site, client.name, recvS[i].type, recvS[i].value);
-                        int newMax = maxLSharedType(dataInit,positionSite(dataInit,recvS[i].site),recvS[i].type);
-
-                        if (oldMax<newMax)
-                        {
-                           actionExclu(dataInit, recvS[i].site, recvS[i].type, (newMax-oldMax));
-                        }
-
-
-                    }
+                actionAll(dataInit,&client,recvS,nb);
                 }
-                }
-
-                ///actionExclu(dataInit, "Montpellier", "CPU", 10);
  
                 free(recvS);
             
