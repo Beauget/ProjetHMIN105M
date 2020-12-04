@@ -225,6 +225,23 @@ int maxLShared(struct LShared * l){
     return max;
 }
 
+int maxLSharedType(struct dataStruct * data,int position,char * type){
+    int max = -1;
+
+    if (strcmp(type,"GO")==0)
+    {
+        max = maxLShared(data[position].LSGo);
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        max = maxLShared(data[position].LSCpu);
+    }
+    return max;
+}
+
+
+
 int lSharedPosition(struct LShared * l,char * name){
     int size =  lSharedSize(l);
 
@@ -463,15 +480,19 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
 
         if (sendAll(client->socket, isExlu) < 1)
             return -1;
+        printf("EXclu\n");
 
         if (sendAll(client->socket, site) < 1)
             return -1;
+        printf("SITE\n");
 
         if (sendAll(client->socket, type) < 1)
             return -1;
+        printf("TYPE\n");
 
         if (sendAll(client->socket, value) < 1)
-            return -1;          
+            return -1;
+        printf("VALUE\n");         
     }
     
     return 1;

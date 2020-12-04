@@ -78,8 +78,8 @@ int main(int argc, char *argv[])
     printf("Client : avant boucle \n"); 
 
     //int x = 0;
-
-    char m[1501];
+ 
+    char m[40];
     initTaille();
      int size=0;
    
@@ -98,12 +98,13 @@ int main(int argc, char *argv[])
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);
 
         printf("Combien de requêtes?\n");
-        fgets(m, sizeof(m), stdin);
+        strcpy(m,"");
+        fgets(m, 20, stdin);
         m[strlen(m) - 1] = '\0'; //retirer le saut de ligne \n parce que j'appuie sur entrer
 
-        if (isInt(m)<0)
+        if (isInt(m)<=0)
         {
-        printf(YEL"Mettre un chiffre\n"RESET);
+        printf(YEL"Mettre un chiffre supérieur à 0\n"RESET);
         }
 
         else{

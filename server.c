@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
         printf("Erreur shmat");
     }
     InitDataFromFile(dataInit);
+    //printf("Site : %s, GO DISPONIBLE : %i/%i, CPU DISPONIBLE : %i/%i \n",dataInit[1].site,dataInit[1].go,dataInit[1].maxGo,dataInit[1].cpu,dataInit[1].maxCpu);
 
     //FIN MEMOIRE PARTAGER
 
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
     int parent = getpid(); //afin de savoir qui est le parent
 
     while (1)
-    {
+    {   
 
         int ecoute = listen(ds, 5);
         if (ecoute < 0)
@@ -156,8 +157,6 @@ int main(int argc, char *argv[])
                 exit(1);
             }
 
-            dataInit = shmat(shmid, NULL, 0);
-
             printf("Server : Mise en place de la memoire partagé + du sémaphore dans le child\n");
 
 
@@ -176,11 +175,14 @@ int main(int argc, char *argv[])
             initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
             affichageClient(client);
 
+            char msg[20];
+            
             while (1) 
             {  
                 affichageEtat(dataInit);
-
-                if (recvAll(dsCv,m)<1)
+                strcpy(msg,"");
+                
+                if (recvAll(client.socketServer,msg)<1)
                 {
                     printf("Client %s : err nombre de requêtes", buffer);
                     free(buffer);
@@ -189,15 +191,46 @@ int main(int argc, char *argv[])
                     exit(1);
                 } 
 
-                printf("%s requête(s) arrivent !\n", m );
-                int nb = isInt(m);
+                int nb = isInt(msg);
+                printf("%s requête(s) arrivent !\n", msg);
                 struct recvStruct * recvS =  malloc(sizeof(struct clientStruct)*nb);
 
-                if (recvServer(client,recvS,isInt(m))<0)
+                if (recvServer(client,recvS,isInt(msg))<0)
                 {
                     printf("Client %s : err au recv\n", buffer );
                     free(recvS);
                 }
+
+                /*ON BLOQUE ET ON VERIFIE SI C'EST POSSIBLE*/
+                //
+                //
+                //
+                else{
+                
+                for (int i = 0; i < nb; ++i)
+                {
+                    if (recvS[i].isExclu==1)
+                    {
+                        actionExclu(dataInit, recvS[i].site, recvS[i].type, recvS[i].value);
+                        actionExcluClient(&client,lExcluSize(client.exclu), recvS[i].type, recvS[i].site,recvS[i].value);
+                    }
+
+                    if (recvS[i].isExclu==0){
+                        int oldMax = maxLSharedType(dataInit,positionSite(dataInit,recvS[i].site),recvS[i].type);
+                        actionShared(dataInit,recvS[i].site, client.name, recvS[i].type, recvS[i].value);
+                        int newMax = maxLSharedType(dataInit,positionSite(dataInit,recvS[i].site),recvS[i].type);
+
+                        if (oldMax<newMax)
+                        {
+                           actionExclu(dataInit, recvS[i].site, recvS[i].type, (newMax-oldMax));
+                        }
+
+
+                    }
+                }
+                }
+
+                ///actionExclu(dataInit, "Montpellier", "CPU", 10);
  
                 free(recvS);
             
