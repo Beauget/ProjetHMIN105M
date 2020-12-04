@@ -376,7 +376,7 @@ void *Reservation(void *param) {
 */
 
 
-int isExluSend(char * msg){
+int isExcluSend(char * msg){
     char m[20];
     fgets(m, sizeof(m), stdin);
     m[strlen(m) - 1] = '\0';
@@ -447,19 +447,18 @@ int valueSend(char * msg){
 
 int SendClient(struct dataStruct* data, struct clientStruct * client,char * size){
     int nbrRequetes=isInt(size);
-    char isExlu[20];
-    char site[20];
-    char type[20];
-    char value[20];
-
-
 
     for (int i = 0; i <nbrRequetes; ++i)
     {   printf("Requête : %i\n",i+1 ); 
         //printf("exclu?,Site,type,value\n");
+        char * isExclu = malloc (20 * sizeof (char));
+        char * site =  malloc (20 * sizeof (char));
+        char * type  =  malloc (20 * sizeof (char));
+        char * value=  malloc (20 * sizeof (char));
+
 
         printf(GRN"Exclusif(e/E) ou partagé(p/P)\n"RESET);
-        while(isExluSend(isExlu)<0){
+        while(isExcluSend(isExclu)<0){
             printf(YEL"Exclusif(e/E) ou partagé(p/P)\n"RESET);
         }
 
@@ -478,7 +477,7 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
             printf(YEL"Combien ?\n"RESET);
         }
 
-        if (sendAll(client->socket, isExlu) < 1)
+        if (sendAll(client->socket, isExclu) < 1)
             return -1;
         printf("EXclu\n");
 
@@ -492,7 +491,12 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
 
         if (sendAll(client->socket, value) < 1)
             return -1;
-        printf("VALUE\n");         
+        printf("VALUE\n");
+
+        free(isExclu);
+        free(site);
+        free(type); 
+        free(value);      
     }
     
     return 1;
@@ -500,19 +504,21 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
 
 /*FONCTIONS RECV COTÉ SERVEUR*/
 int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
-    char m[20];
+    //strcpy(m,"");
     char recv[4][20];
     for (int i = 0; i < size; ++i)
     {
         for (int j = 0; j < 4; ++j)
-        {
+        {   
+            char * m = malloc (20 * sizeof (char));
             if (recvAll(client.socketServer,m)<1)
             {
                 printf("Client %s : erreur au recv", client.name);
                 return -1;
             }
             strcpy(recv[j],m);
-                    
+
+            free(m);            
         }  
 
         strcpy(recvS[i].name,client.name);

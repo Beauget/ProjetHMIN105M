@@ -175,13 +175,13 @@ int main(int argc, char *argv[])
             initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
             affichageClient(client);
 
-            char msg[20];
+            //char msg[20];
             
             while (1) 
-            {  
+            {   char * msg = malloc (20 * sizeof (char));
                 affichageEtat(dataInit);
-                strcpy(msg,"");
-                
+                //strcpy(msg,"");
+
                 if (recvAll(client.socketServer,msg)<1)
                 {
                     printf("Client %s : err nombre de requêtes", buffer);
@@ -200,12 +200,13 @@ int main(int argc, char *argv[])
                     printf("Client %s : err au recv\n", buffer );
                     free(recvS);
                 }
+                free(msg);
 
                 /*ON BLOQUE ET ON VERIFIE SI C'EST POSSIBLE*/
                 //
                 //
                 //
-                else{
+                if(recvServer(client,recvS,isInt(msg))>0){
                 
                 for (int i = 0; i < nb; ++i)
                 {

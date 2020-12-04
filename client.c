@@ -79,11 +79,11 @@ int main(int argc, char *argv[])
 
     //int x = 0;
  
-    char m[40];
+    //char msg[40];
     initTaille();
      int size=0;
    
-    while (1) 
+    while (1)   
     {  
 
         if (size<0)
@@ -98,29 +98,35 @@ int main(int argc, char *argv[])
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);
 
         printf("Combien de requêtes?\n");
-        strcpy(m,"");
-        fgets(m, 20, stdin);
-        m[strlen(m) - 1] = '\0'; //retirer le saut de ligne \n parce que j'appuie sur entrer
 
-        if (isInt(m)<=0)
+        char * msg = malloc (20 * sizeof (char));
+        fgets(msg, sizeof(msg), stdin);
+
+
+        msg[strlen(msg) - 1] = '\0'; //retirer le saut de ligne \n parce que j'appuie sur entrer
+
+        if (isInt(msg)<=0)
         {
-        printf(YEL"Mettre un chiffre supérieur à 0\n"RESET);
+            printf(YEL"Mettre un chiffre supérieur à 0\n"RESET);
+            free(msg);
         }
 
         else{
-            if (sendAll(client.socket, m) < 1){
+            if (sendAll(client.socket, msg) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes\n"RESET);
             }
             
-            if(SendClient(ptrdata,&client,m)<1)
+            if(SendClient(ptrdata,&client,msg)<1)
                 printf(RED"Erreur pendant le send\n"RESET);
             else
                 printf(GRN"Requêtes Envoyé !\n"RESET);
+            free(msg);
         }
+        //free(msg);
     }
 
     close(ds);
-    printf(" %li Client : je termine\n", strlen(m));
+    //printf(" %li Client : je termine\n", strlen(m));
     //informer au serveur qu'un client est déconnecté
 
     return 0;
