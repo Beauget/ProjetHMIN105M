@@ -82,7 +82,8 @@ int main(int argc, char *argv[])
     //char msg[40];
     initTaille();
      int size=0;
-   
+
+    affichageEtat(ptrdata);
     while (1)   
     {  
  
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         ptrdata = shmat(shmid, NULL, 0);
-        affichageEtat(ptrdata);
+        //affichageEtat(ptrdata);
 
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);
 
