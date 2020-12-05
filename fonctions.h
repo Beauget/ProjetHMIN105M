@@ -72,15 +72,18 @@ struct recvStruct
     
 }recvStruct;
 
-struct Sem {
+/*struct Sem {
     int idSem;
     struct sembuf *op;
-}Sem;
+}Sem;*/
 
-struct gestionSys {
+struct gestionSys{
     struct dataStruct *etat;
-    struct Sem *info;
+    //struct Sem *info;
+    int idSem;
     pthread_mutex_t verrou;
-    pthread_cond_t cond;
+    //pthread_cond_t cond;
 
 }gestionSys;
+
+

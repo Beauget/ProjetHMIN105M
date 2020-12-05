@@ -2,13 +2,6 @@
 
 
 
-
-void initMutex(pthread_mutex_t verrou,pthread_cond_t cond) {
-    pthread_mutex_init(&verrou,NULL);
-    pthread_cond_init(&cond,NULL);
-}
-
-
 int nbLigne(FILE *file) {
     int nbLignes = 0;
     int cpt;
@@ -362,15 +355,6 @@ void suppressionSharedType(struct dataStruct* data,char * site,char * type,int p
 }
 
 
-
-
-
-
-void *Reservation(void *param) {
-}
-
-
-
 /*
 * FONCTIONS SEND COTÉ CLIENT
 */
@@ -593,3 +577,48 @@ void actionAll(struct dataStruct * data, struct clientStruct * client,struct rec
         }
     }
 }
+
+
+
+
+
+
+void initMutex(pthread_mutex_t * verrou) {
+    pthread_mutex_init(verrou,NULL);
+}
+
+
+int P(int semid, int semnum, int n) {
+    struct sembuf buf = {semnum, -n, 0};
+    return semop(semid, &buf, 1);
+}
+
+
+// incrémentation du sémpahore
+int V(int semid, int semnum, int n) {
+    struct sembuf buf = {semnum, n, 0};
+    return semop(semid, &buf, 1);
+}
+
+
+// attente du 0
+int Z(int semid, int semnum) {
+    struct sembuf buf = {semnum, 0, 0};
+    return semop(semid, &buf, 1);
+}
+
+void *Reservation(void *param) {
+    struct gestionSys *p=(struct gestionSys*)param;
+        printf("Reservation\n");
+    int nbrclients = semctl(p->idSem,1, GETNCNT);
+    V(p->idSem,1,nbrclients);
+    }
+
+void * signalAffichage(void *param) {
+    struct gestionSys * p= (struct gestionSys*) param;
+    P(p->idSem,1,1);
+    pthread_mutex_lock(&p->verrou);
+    printf("Update!\n");
+    pthread_mutex_unlock(&p->verrou);
+    //pthread_exit(NULL);
+    }

@@ -1,5 +1,11 @@
 #include "fonctions.c" 
 
+union semun {
+    struct semid_ds *buf;    /* Tampon pour IPC_STAT, IPC_SET */
+    unsigned short  *array;  /* Tableau pour GETALL, SETALL */
+    struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
+};
+
 int main(int argc, char *argv[])
 {
 
@@ -67,12 +73,41 @@ int main(int argc, char *argv[])
     key_t key = ftok("sharedServer.txt", 100);
     int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
     struct dataStruct *ptrdata;
+    ptrdata = (struct dataStruct*)shmat(shmid,NULL,0);
  
     //FIN MEMOIRE PARTAGER
 
     struct clientStruct client;   
     initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
     affichageClient(client);
+
+    key_t keySem = ftok("sharedSem.txt",10);
+    if(keySem == -1) {
+        printf("Erreur ftok sémaphore");
+        exit(1);
+    }
+
+    int idSem = semget(keySem,taille,IPC_CREAT | 0666);
+    union semun semCtrl;
+    ushort tabSem[1];
+    for(int i = 0; i < 1; i++) {
+        tabSem[i] = 1;
+    }
+    semCtrl.array = tabSem;
+    if(idSem == -1) {
+        perror("Server : erreur création sémaphore");
+        exit(1);
+    }
+
+    int initSem = semctl(idSem,0,SETALL,semCtrl);
+
+
+    struct gestionSys * paramGestionSys = malloc(sizeof(gestionSys));
+    paramGestionSys->idSem = initSem ; 
+    pthread_mutex_init(&paramGestionSys->verrou,NULL);
+
+    pthread_t * affiche;
+    affiche = (pthread_t *) malloc (sizeof(pthread_t));
      
 
     printf("Client : avant boucle \n"); 
@@ -86,6 +121,9 @@ int main(int argc, char *argv[])
     affichageEtat(ptrdata);
     while (1)   
     {  
+        /*if (pthread_create(affiche, NULL,signalAffichage, NULL) < 0) {
+            printf("mdr\n");
+        }*/
  
         if (size<0)
         {
@@ -93,7 +131,7 @@ int main(int argc, char *argv[])
         }
 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
-        ptrdata = shmat(shmid, NULL, 0);
+        //ptrdata = shmat(shmid, NULL, 0);
         //affichageEtat(ptrdata);
 
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);

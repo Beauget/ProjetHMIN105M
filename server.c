@@ -99,14 +99,12 @@ int main(int argc, char *argv[])
         {0, 0, SEM_UNDO}
     };
 
-    struct Sem gestionSem;
-    gestionSem.idSem = idSem;
-    gestionSem.op = op;
+    struct gestionSys * paramGestionSys = malloc(sizeof(gestionSys));
+    paramGestionSys->idSem = initSem ; 
+    pthread_mutex_init(&paramGestionSys->verrou,NULL);
 
-    struct gestionSys paramGestionSys;
-    paramGestionSys.info = &gestionSem;
-    initMutex(paramGestionSys.verrou,paramGestionSys.cond);
-    printf("Sémaphore mis en place \n");
+    pthread_t * affiche;
+    affiche = (pthread_t *) malloc (sizeof(pthread_t));
 
     //FIN SEMAPHORE
 
@@ -212,6 +210,10 @@ int main(int argc, char *argv[])
                 }
  
                 free(recvS);
+
+               /* if (pthread_create(&affiche[0], NULL,Reservation, NULL) < 0) {
+                    printf("mdr\n");
+                }*/
             
             }
         }
