@@ -7,7 +7,7 @@ union semun {
     struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
 };
 
-
+ 
 int main(int argc, char *argv[])
 {
 
@@ -81,10 +81,8 @@ int main(int argc, char *argv[])
 
     int idSem = semget(keySem,taille,IPC_CREAT | 0666);
     union semun semCtrl;
-    ushort tabSem[1];
-    for(int i = 0; i < 1; i++) {
-        tabSem[i] = 1;
-    }
+    ushort tabSem[4]={1,0,0,0};
+
     semCtrl.array = tabSem;
     if(idSem == -1) {
         perror("Server : erreur création sémaphore");
@@ -93,26 +91,16 @@ int main(int argc, char *argv[])
 
     int initSem = semctl(idSem,0,SETALL,semCtrl);
 
-    struct sembuf op[] = {
-        {0, -1, SEM_UNDO},
-        {0, 1, SEM_UNDO},
-        {0, 0, SEM_UNDO}
-    };
-
-    struct gestionSys * paramGestionSys = malloc(sizeof(gestionSys));
-    paramGestionSys->idSem = initSem ; 
-    pthread_mutex_init(&paramGestionSys->verrou,NULL);
-
-    pthread_t * affiche;
-    affiche = (pthread_t *) malloc (sizeof(pthread_t));
-
-    //FIN SEMAPHORE
-
     int parent = getpid(); //afin de savoir qui est le parent
+
+  
+    char Buffer[40];
+    struct dataStruct etat;
+
 
     while (1)
     {   
-
+        //affichageEtat(dataInit);
         int ecoute = listen(ds, 5);
         if (ecoute < 0)
         {
@@ -127,20 +115,20 @@ int main(int argc, char *argv[])
             close(ds);
             exit(1);
         }
-
+   
         printf("Serveur: le client %s:%d est connecté  \n", inet_ntoa(adCv.sin_addr), ntohs(adCv.sin_port));
         printf("En attente de recevoir le nom du client %i \n ", dsCv);
 
         int child; //je crée un enfant du processus car un client c'est connecté !
 
         if (child = fork())
-        { //je fork
+        {
 
             int pidChild = getpid();
-            char m[600];
+            char m[60];
 
             //struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
-
+ 
             /*recupère la mémoire partagé */
             key_t key = ftok("sharedServer", 100);
 
@@ -151,7 +139,7 @@ int main(int argc, char *argv[])
             if (shmid < 0)
             {
                 perror("Serveur : shmid <0");
-                close(ds);
+                close(ds); 
                 exit(1);
             }
 
@@ -164,31 +152,54 @@ int main(int argc, char *argv[])
                 printf("Client %i : erreur nom irrécuparable", ds);
                 free(buffer);
                 close(dsCv);
-                close(ds);
+                close(ds); 
                 exit(1);
             }
             printf(GRN"Bonjour %s ! \n", buffer);
+            V(idSem,3,1);
 
             struct clientStruct client;
             initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
             affichageClient(client);
 
-            //char msg[20];
+             struct gestionSendUpdate serverUpdate;
+            serverUpdate.etat= dataInit;
+            serverUpdate.socket = dsCv;
+            pthread_t updt; 
+
+
+
+            if (pthread_create(&updt, NULL, UpdateServer, &serverUpdate) < 0) {
+                printf("erreur pthread_create\n");
+                close(serverUpdate.socket);
+                exit(1);
+            } 
             
             while (1) 
             {   char * msg = malloc (20 * sizeof (char));
-                affichageEtat(dataInit);
+                //affichageEtat(dataInit);
                 //strcpy(msg,"");
 
-                if (recvAll(client.socketServer,msg)<1)
+                if (recvWithSize2(client.socketServer,msg)<1)
                 {
                     printf("Client %s : err nombre de requêtes", buffer);
                     free(buffer);
                     close(dsCv);
                     close(ds);
                     exit(1);
-                } 
+                }
 
+                if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
+                 {
+                     printf("Client %s : veux se déconnecter\n", buffer);
+                     close(dsCv);
+                     P(idSem,3,1);
+                     suppressionSharedClientAll(dataInit,buffer);
+                     printf("Client %s : c'est déconnecter\n", buffer);
+                     free(buffer);
+                     exit(0);
+                 } 
+ 
                 int nb = isInt(msg);
                 printf("%s requête(s) arrivent !\n", msg);
                 struct recvStruct * recvS =  malloc(sizeof(struct clientStruct)*nb);
@@ -210,12 +221,14 @@ int main(int argc, char *argv[])
                 }
  
                 free(recvS);
+                int nba = semctl(idSem, 3, GETVAL);
+                printf("%i clients\n", nba);
+                V(idSem,1, nba);
 
-               /* if (pthread_create(&affiche[0], NULL,Reservation, NULL) < 0) {
-                    printf("mdr\n");
-                }*/
-            
-            }
+                printSharedData(dataInit);
+
+              
+            } 
         }
         if (child == parent)
         {
@@ -225,7 +238,7 @@ int main(int argc, char *argv[])
             close(ds);
             shmctl(shmid,IPC_RMID,NULL);
             exit(1);
-        }
+        } 
     }
     close(dsCv);
     close(ds);

@@ -63,11 +63,6 @@ int main(int argc, char *argv[])
     int socket = ds;
     char *ip = argv[1];
     char *port = argv[2];
-    pthread_mutex_t lock;
-    pthread_mutex_init(&lock, NULL);
-    pthread_cond_t cond;
-    pthread_cond_init(&cond, NULL);
-
     //MEMOIRE PARTAGER
 
     key_t key = ftok("sharedServer.txt", 100);
@@ -81,13 +76,13 @@ int main(int argc, char *argv[])
     initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
     affichageClient(client);
 
-    key_t keySem = ftok("sharedSem.txt",10);
+/*    key_t keySem = ftok("sharedSem.txt",10);
     if(keySem == -1) {
         printf("Erreur ftok sémaphore");
         exit(1);
     }
 
-    int idSem = semget(keySem,taille,IPC_CREAT | 0666);
+   int idSem = semget(keySem,taille,IPC_CREAT | 0666);
     union semun semCtrl;
     ushort tabSem[1];
     for(int i = 0; i < 1; i++) {
@@ -107,36 +102,63 @@ int main(int argc, char *argv[])
     pthread_mutex_init(&paramGestionSys->verrou,NULL);
 
     pthread_t * affiche;
-    affiche = (pthread_t *) malloc (sizeof(pthread_t));
+    affiche = (pthread_t *) malloc (sizeof(pthread_t));*/
      
 
     printf("Client : avant boucle \n"); 
 
     //int x = 0;
+    pthread_mutex_t lock;
+    pthread_mutex_init(&lock, NULL);
+    pthread_cond_t cond;
+    pthread_cond_init(&cond, NULL);
  
-    //char msg[40];
+    char Buffer[40];
+    struct dataStruct etat;
+
+    struct gestionSendUpdate clientUpdate;
+    clientUpdate.etat= &etat;
+    clientUpdate.socket = ds;
+    clientUpdate.verrou=&lock;
+    clientUpdate.cond=&cond;
+
+    pthread_t updt;
+
     initTaille();
      int size=0;
 
     affichageEtat(ptrdata);
+    if (pthread_create(&updt, NULL, UpdateClient, &clientUpdate) < 0) {
+        printf("erreur pthread_create\n");
+        exit(1);
+    } 
     while (1)   
     {  
         /*if (pthread_create(affiche, NULL,signalAffichage, NULL) < 0) {
             printf("mdr\n");
-        }*/
+        }
+        if (sem_getvalue(paramGestionSys->idSem,1)!=0)
+        {
+        P(paramGestionSys->idSem,1,1);
+        pthread_mutex_lock(&paramGestionSys->verrou);
+        printf("Update!\n");
+        pthread_mutex_unlock(&paramGestionSys->verrou);
+        }
+
+        printf("%i\n",sem_getvalue(paramGestionSys->idSem,1) );*/
  
         if (size<0)
         {
             printf("Vous avez atteins le nombre maximum de réservations\n");
         }
-
+ 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         //ptrdata = shmat(shmid, NULL, 0);
         //affichageEtat(ptrdata);
 
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);
 
-        printf("Combien de requêtes?\n");
+        printf("Combien de requêtes?/ Quitter?(q/Q)\n");
 
         char * msg = malloc (20 * sizeof (char));
         fgets(msg, sizeof(msg), stdin);
@@ -144,14 +166,23 @@ int main(int argc, char *argv[])
 
         msg[strlen(msg) - 1] = '\0'; //retirer le saut de ligne \n parce que j'appuie sur entrer
 
+        if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
+        {
+            printf("En cour de déconnexion\n");
+            sendWithSize2(client.socket,msg, sizeof(msg));
+            free(msg);
+            close(ds);
+            exit(0);
+        }
+
         if (isInt(msg)<=0)
         {
             printf(YEL"Mettre un chiffre supérieur à 0\n"RESET);
             free(msg);
         }
 
-        else{
-            if (sendAll(client.socket, msg) < 1){
+        else{//pthread_mutex_lock()
+            if (sendWithSize2(client.socket,msg, sizeof(msg)) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes\n"RESET);
             }
             

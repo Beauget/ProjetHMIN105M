@@ -47,6 +47,9 @@ struct clientStruct {
     char port[20];
     struct LExclu exclu[101];
     struct dataStruct * data;
+    pthread_mutex_t verrou;
+    pthread_cond_t cond;
+
 }dataClient;
 
 
@@ -77,13 +80,18 @@ struct recvStruct
     struct sembuf *op;
 }Sem;*/
 
-struct gestionSys{
+struct gestionSendUpdate{
     struct dataStruct *etat;
-    //struct Sem *info;
-    int idSem;
-    pthread_mutex_t verrou;
-    //pthread_cond_t cond;
+    int socket;
+    char * name;
+    char msg[20];
+    pthread_mutex_t *verrou;
+    pthread_cond_t *cond;
+}gestionSendUpdate;
 
-}gestionSys;
-
-
+struct SendUpdate{
+    struct dataStruct *etat;
+    int socket;
+    char * name;
+    char msg[20];
+}SendUpdate;

@@ -1,5 +1,5 @@
 #include "fonctions.h"
-
+#include "fonctionPart.c"
 
 
 int nbLigne(FILE *file) {
@@ -120,7 +120,7 @@ int sendFunction(int dsClient, char *message, int taille) {
         }
         else if(value == 0) {
             printf("Erreur sendFunction()");
-            return 0;
+            return -1;
         }
         nbOctet += value;
     }
@@ -140,7 +140,7 @@ int RecvFunction(int dsClient, char *reponse, int taille) {
         }
         else if(value == 0) {
             printf("Erreur RecvFunction()");
-            return 0;
+            return -1;
         }
         nbOctet += value;
     }
@@ -192,89 +192,6 @@ int positionSite(struct dataStruct * data, char * site){
     return -1;
 }
 
-/*DONNE LA LONGEUR DE LA LISTE, RENVOIE -1 SI LA LISTE EST PLEINE */
-int lSharedSize(struct LShared * l){
-    for (int i = 0; i < 100; ++i)
-    {
-        if((strlen(l[i].name)==0) && (l[i].quantity==0)) //vérifie si le nom et vide et la quantité est égale à 0;
-            return i;
-    }
-    return -1;
-}
-
-/*RENVOIE LA QUANTITY MAX DE LA LISTE PARTAGER*/
-int maxLShared(struct LShared * l){
-    int max = 0;
-    int size = lSharedSize(l);
-
-    if (size==0)
-        return max;
-
-    for (int i = 0; i < size; ++i)
-    {
-        if (max<l[i].quantity)       
-            max = l[i].quantity;
-    }
-    return max;
-}
-
-int maxLSharedType(struct dataStruct * data,int position,char * type){
-    int max = -1;
-
-    if (strcmp(type,"GO")==0)
-    {
-        max = maxLShared(data[position].LSGo);
-    }
-
-    if (strcmp(type,"CPU")==0)
-    {
-        max = maxLShared(data[position].LSCpu);
-    }
-    return max;
-}
-
-
-
-int lSharedPosition(struct LShared * l,char * name){
-    int size =  lSharedSize(l);
-
-    for (int i = 0; i < size; ++i)
-    {
-        if (strcmp(l[i].name,name)==0 && strlen(name)!=0)
-            return i;
-    }
-    return -1;
-}
-
-void suppressionShared(struct LShared * l, int position, int size){
-    for (int i = 0; i < size; ++i)
-    {
-        l[i]=l[i+1];
-    }
-}
-
-/*DONNE LA LONGEUR DE LA LISTE, RENVOIE -1 SI LA LISTE EST PLEINE */
-int lExcluSize(struct LExclu * l){
-    for (int i = 0; i < 100; ++i)
-    {
-        if((strlen(l[i].site)==0)&& (l[i].quantity==0)) //vérifie si le site et vide et la quantité est égale à 0;
-            return i;
-    }
-    return -1;
-}
-
-/*RENVOIE LA POSITION DU SITE SI IL EST DANS LA LISTE EXCLUSIF -1 SINON*/
-int lExcluPosition(struct LExclu * l,char * type, char * site){
-    int size = lExcluSize(l);
-
-    for (int i = 0; i < size; ++i)
-    {
-        if (strcmp(l[i].type,type)==0 && strcmp(l[i].site,site)==0)
-            return i;
-    }
-    return -1;
-}
-
 /*MET A JOUR LA STRUCTURE EXLUSIF EN DIMINUANT LE NOMBRE DE DE GO/CPU */
 void actionExclu(struct dataStruct* data, char * site, char * type, int value){
     int position = positionSite(data,site);
@@ -305,52 +222,24 @@ void suppressionExclu(struct dataStruct* data, char * site, char * type, int val
     }
 }
 
-/*MET A JOUR LA STRUCTURE CLIENT*/
-void actionExcluClient(struct clientStruct * client,int size, char * type, char * site, int value){
-    strcpy(client->exclu[size].type,type);
-    strcpy(client->exclu[size].site,site);
-    client->exclu[size].quantity= value;    
-}
-void suppressionExcluClient(struct clientStruct * client,int position, int size){
-    for (int i = position; i < size; ++i)
-    {
-        client->exclu[i] = client->exclu[i+1] ;
+
+
+
+void suppressionSharedClientAll(struct dataStruct* data,char * name){
+    for (int i = 0; i < taille; ++i)
+    {   int sizeGo = lSharedSize(data[i].LSGo);
+        int sizeCpu = lSharedSize(data[i].LSCpu);
+        suppressionSharedClient(data[i].LSGo,name,sizeGo);
+        suppressionSharedClient(data[i].LSCpu,name,sizeCpu);
     }
-    //la magie est que les tableau sont de taille 101 donc forcement il y aura un site ="" et quantity = 0
 }
 
-/*ADD DANS LA LISTE DES RESERVATION PARTAGER DANS LA STRUCTURE PARTAGER*/
-void actionShared(struct dataStruct* data,char * site, char * name, char * type, int value){
-    int position = positionSite(data,site);    
-    struct LShared l;
-    strcpy(l.name , name);
-    l.quantity = value;
+void suppressionExcluClientAll(struct dataStruct* data,struct clientStruct * client){
+    int size = lExcluSize(client->exclu);
 
-
-    if (strcmp(type,"GO")==0)
-    {   
-        int size = lSharedSize(data[position].LSGo);
-        data[position].LSGo[size]= l;
-    }
-
-    if (strcmp(type,"CPU")==0)
+    for (int i = 0; i < size; ++i)
     {
-        int size = lSharedSize(data[position].LSCpu);
-        data[position].LSCpu[size] = l;
-    }
-
-}
-
-void suppressionSharedType(struct dataStruct* data,char * site,char * type,int pos,int size){
-    int position = positionSite(data,site);  
-    if (strcmp(type,"GO")==0)
-    {   
-        suppressionShared(data[position].LSGo, pos, size);
-    }
-
-    if (strcmp(type,"CPU")==0)
-    {
-        suppressionShared(data[position].LSCpu, pos, size);
+        suppressionExclu(data,client->exclu->site,client->exclu->type,client->exclu->quantity);
     }
 }
 
@@ -529,13 +418,6 @@ int restantType(struct dataStruct * data,int position,char * type, int value){
 }
 
 
-
-
-
-
-
-
-
 void actionExcluAll(struct dataStruct * data, struct clientStruct * client,struct recvStruct recvS){
     int size = lExcluSize(client->exclu);
 
@@ -543,13 +425,32 @@ void actionExcluAll(struct dataStruct * data, struct clientStruct * client,struc
     actionExcluClient(client,size, recvS.type, recvS.site,recvS.value);
 }
 
+
+
+int getValue(struct dataStruct *data, int position,char * type, int posList){
+    if (strcmp(type,"GO")==0)
+    {   
+        return(data[position].LSGo[posList].quantity);
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        return(data[position].LSCpu[posList].quantity);
+    }
+}
+
 void actionSharedAll(struct dataStruct * data, struct clientStruct * client,struct recvStruct recvS){
     int position= positionSite(data,recvS.site);
 
     int oldMax = maxLSharedType(data,position,recvS.type);
-    printf("%i\n", oldMax);
+    //printf("%i\n", oldMax);
 
-    actionShared(data,recvS.site, client->name, recvS.type, recvS.value);
+    int positionToAdd= isInSharedType(data,position,client,recvS.type);
+
+    int value = recvS.value + getValue(data, position,recvS.type,positionToAdd);
+    actionShared(data,position,positionToAdd,client->name, recvS.type, value);
+
+    printf("%s : %s position %s %i, value %i/%i \n", client->name,data[position].site,recvS.type ,positionToAdd , recvS.value,value);
 
     int newMax = maxLSharedType(data,position,recvS.type);
     printf("%i\n", newMax);
@@ -588,37 +489,140 @@ void initMutex(pthread_mutex_t * verrou) {
 }
 
 
-int P(int semid, int semnum, int n) {
+int P(int semid, int semnum, int n) {   //-1
     struct sembuf buf = {semnum, -n, 0};
     return semop(semid, &buf, 1);
 }
 
 
 // incrémentation du sémpahore
-int V(int semid, int semnum, int n) {
+int V(int semid, int semnum, int n) { //+1
     struct sembuf buf = {semnum, n, 0};
     return semop(semid, &buf, 1);
 }
 
 
 // attente du 0
-int Z(int semid, int semnum) {
+int Z(int semid, int semnum) { //0
     struct sembuf buf = {semnum, 0, 0};
     return semop(semid, &buf, 1);
 }
 
-void *Reservation(void *param) {
-    struct gestionSys *p=(struct gestionSys*)param;
-        printf("Reservation\n");
-    int nbrclients = semctl(p->idSem,1, GETNCNT);
-    V(p->idSem,1,nbrclients);
-    }
 
-void * signalAffichage(void *param) {
-    struct gestionSys * p= (struct gestionSys*) param;
-    P(p->idSem,1,1);
-    pthread_mutex_lock(&p->verrou);
-    printf("Update!\n");
-    pthread_mutex_unlock(&p->verrou);
-    //pthread_exit(NULL);
+
+
+
+
+
+
+
+
+
+
+
+
+int recvAll2(int socket, char * buf, int len) { // recvAll function
+  int remaining = len;
+  key_t keysem = ftok("shmfile", 10);
+  int idSem = semget(keysem, 7, IPC_CREAT | 0666);
+  while (remaining) {
+    int received = recv(socket, buf, remaining, 0);
+    if (received <= 0) {
+      semctl(idSem, 5, SETVAL, semctl(idSem, 5, GETVAL) - 1);
+     // printf( "[Quit] Client %s:%d disconnected !\n", ip, port);
+      exit(1);
     }
+    buf += received;
+    remaining -= received;
+  }
+  return 0;
+}
+
+int recvWithSize2(int sock, char * data) {
+  char sizeToRecv[4];
+  if (recvAll2(sock, sizeToRecv, sizeof(sizeToRecv)) == 1) {
+    return -1;
+  };
+  if (recvAll2(sock, data, *((int * ) sizeToRecv)) == 1) {
+    return -1;
+  };
+  return *((int * ) sizeToRecv);
+}
+
+int sendall2(int sock, const char* data, int data_length){
+        int bytessend = 0;
+        while ( bytessend < data_length) {
+                int result = send(sock, data + bytessend, data_length - bytessend, 0);
+                if ( result == -1) { perror("send error"); exit(1);}    // not exit if errno == EAGAIN
+                bytessend += result;
+        }
+        return bytessend;
+}
+
+
+int sendWithSize2(int sock, const char* data, int data_length){
+        char sizeToSend[4];
+        *((int*) sizeToSend ) = data_length;
+        sendall2(sock, sizeToSend,sizeof(sizeToSend) );
+        sendall2(sock, data,data_length);
+        return 1;
+}
+
+
+void * UpdateClient(void *param) {
+
+    while(1){
+        //printf("J'attend un message d'amour while\n");
+        struct gestionSendUpdate * p = (struct gestionSendUpdate*) param;
+        printf("J'attend un message d'amour\n");
+        //recvAll(p->socket,p->msg);
+        recvWithSize2(p->socket, p->msg);
+        printf("reçus");
+        printf("%s\n",p->msg);
+        //printf("%s\n", p->msg);
+
+        pthread_cond_broadcast(p->cond);
+
+    }
+}
+
+void * UpdateServer(void *param) {
+    struct SendUpdate * p = (struct SendUpdate*) param;
+
+    key_t keySem = ftok("sharedSem.txt",10);
+    int idSem = semget(keySem,taille,IPC_CREAT | 0666);
+
+    while(1){
+        if ( semctl(idSem, 1, GETVAL) > 0 ) {
+
+            printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
+            sendWithSize2(p->socket, "PING DE MAJ", sizeof("PING DE MAJ"));
+            printf("envoyé\n");
+            //sendAll(p->socket,"COUCOU");
+            P(idSem,1,1);
+            //Z(idSem,2);
+        }
+        /*sleep(3);
+        printf("pouet\n");
+        printf("0 : %i \n" ,semctl(idSem, 0, GETVAL) );
+        printf("1 : %i \n" ,semctl(idSem, 1, GETVAL) );
+        printf("2 : %i \n" ,semctl(idSem, 2, GETVAL) );
+        printf("3 : %i \n" ,semctl(idSem, 3, GETVAL) );*/
+
+
+    }
+}
+
+
+
+
+
+void printSharedData(struct dataStruct * data ){
+    for (int i = 0; i < taille; ++i)
+    {   printf("%s\n",data[i].site );
+        int sizeGo= lSharedSize(data[i].LSGo);
+        int sizeCpu= lSharedSize(data[i].LSCpu);
+        printShared(data[i].LSGo, sizeGo);
+        printShared(data[i].LSCpu,sizeCpu);
+    }    
+}
