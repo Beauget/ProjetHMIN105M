@@ -208,8 +208,8 @@ void actionExclu(struct dataStruct* data, char * site, char * type, int value){
 }
 
 /*MET A JOUR LA STRUCTURE EXCLUSIF EN AJOUTANT LE NOMBRE DE DE GO/CPU */
-void suppressionExclu(struct dataStruct* data, char * site, char * type, int value){
-    int position = positionSite(data,site);
+void suppressionExclu(struct dataStruct* data, int position, char * type, int value){
+    //int position = positionSite(data,site);
 
     if (strcmp(type,"GO")==0)
     {   
@@ -227,19 +227,30 @@ void suppressionExclu(struct dataStruct* data, char * site, char * type, int val
 
 void suppressionSharedClientAll(struct dataStruct* data,char * name){
     for (int i = 0; i < taille; ++i)
-    {   int sizeGo = lSharedSize(data[i].LSGo);
+    {   int maxGO = maxLSharedType(data , i ,"GO");
+        int maxCpu = maxLSharedType(data , i ,"CPU");
+        int sizeGo = lSharedSize(data[i].LSGo);
         int sizeCpu = lSharedSize(data[i].LSCpu);
         suppressionSharedClient(data[i].LSGo,name,sizeGo);
         suppressionSharedClient(data[i].LSCpu,name,sizeCpu);
+        int nMaxGO = maxLSharedType(data , i ,"GO");
+        int nMaxCpu = maxLSharedType(data , i ,"CPU");
+
+        if (maxGO>nMaxGO)
+            suppressionExclu(data,i,"GO",maxGO-nMaxGO); //réaloue les go 
+
+        if (maxCpu>nMaxCpu)
+            suppressionExclu(data,i,"CPU",maxCpu>nMaxCpu);
     }
 }
 
 void suppressionExcluClientAll(struct dataStruct* data,struct clientStruct * client){
+    //int position = positionSite(data,client->exclu->site);
     int size = lExcluSize(client->exclu);
 
     for (int i = 0; i < size; ++i)
-    {
-        suppressionExclu(data,client->exclu->site,client->exclu->type,client->exclu->quantity);
+    {   int position = positionSite(data,client->exclu[i].site);
+        suppressionExclu(data,position,client->exclu[i].type,client->exclu[i].quantity);
     }
 }
 
