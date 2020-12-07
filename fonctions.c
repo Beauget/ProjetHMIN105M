@@ -236,11 +236,14 @@ void suppressionSharedClientAll(struct dataStruct* data,char * name){
         int nMaxGO = maxLSharedType(data , i ,"GO");
         int nMaxCpu = maxLSharedType(data , i ,"CPU");
 
-        if (maxGO>nMaxGO)
+        if (maxGO>nMaxGO){
             suppressionExclu(data,i,"GO",maxGO-nMaxGO); //réaloue les go 
+        }
 
-        if (maxCpu>nMaxCpu)
-            suppressionExclu(data,i,"CPU",maxCpu>nMaxCpu);
+        if (maxCpu>nMaxCpu){
+            suppressionExclu(data,i,"CPU",maxCpu-nMaxCpu);
+            //printf("%s\n", );
+        }
     }
 }
 

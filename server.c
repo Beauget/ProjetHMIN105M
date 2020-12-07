@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
             
             while (1) 
             {   char * msg = malloc (20 * sizeof (char));
-                //affichageEtat(dataInit);
+                affichageEtat(dataInit);
                 //strcpy(msg,"");
 
                 if (recvWithSize2(client.socketServer,msg)<1)
@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
                      close(dsCv);
                      P(idSem,3,1);
                      suppressionSharedClientAll(dataInit,buffer);
+                     suppressionExcluClientAll(dataInit,&client);
                      printf("Client %s : c'est déconnecter\n", buffer);
                      free(buffer);
                      exit(0);
