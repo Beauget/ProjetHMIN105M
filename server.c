@@ -213,13 +213,16 @@ int main(int argc, char *argv[])
                 free(msg);
 
                 /*ON BLOQUE ET ON VERIFIE SI C'EST POSSIBLE*/
-                // 
+                //
+                int possible = isPossible(dataInit,&client,recvS,nb);
+                printf("possible : %i\n", possible );
                 //
                 //
-                if(recvServer(client,recvS,isInt(msg))>0){
+                
+                //if(recvServer(client,recvS,isInt(msg))>0){
                 
                 actionAll(dataInit,&client,recvS,nb);
-                }
+                //}*/
  
                 free(recvS);
                 int nba = semctl(idSem, 3, GETVAL);

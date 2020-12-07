@@ -41,8 +41,8 @@ int maxLSharedType(struct dataStruct * data,int position,char * type){
 }
 
 /*PREMIERE APPARITION DU CLIENT DANS LA LISTE                                               Inutiliser*/
-int lSharedPosition(struct LShared * l,char * name){
-    int size =  lSharedSize(l);
+int lSharedPosition(struct LShared * l,char * name,int size){
+    //int size =  lSharedSize(l);
 
     for (int i = 0; i < size; ++i)
     {
@@ -125,24 +125,30 @@ int inShared(struct LShared * l, char *name, int size){
             return i;
         }
     }
-    return size;
+    return -1;
 }
 
 int isInSharedType(struct dataStruct * data,int position, struct clientStruct * client ,char * type){
 
     if (strcmp(type,"GO")==0)
     {   int size = lSharedSize(data[position].LSGo);
-        return(inShared(data[position].LSGo, client->name,size));
+        int pos = inShared(data[position].LSGo, client->name,size);
+        if (pos<0)
+            return size;
+        else
+            return pos;
         printShared(data[position].LSGo,size);
-        printf("size = %i\n",size );
     }
 
     if (strcmp(type,"CPU")==0)
     {
         int size = lSharedSize(data[position].LSCpu);
-        return(inShared(data[position].LSCpu, client->name,size));
+        int pos =inShared(data[position].LSCpu, client->name,size);
+        if (pos<0)
+            return size;
+        else
+            return pos;        
         printShared(data[position].LSCpu,size);
-        printf("size = %i\n",size );
     }
 }
 
