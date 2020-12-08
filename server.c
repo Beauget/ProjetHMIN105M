@@ -212,42 +212,50 @@ int main(int argc, char *argv[])
                 }
                 free(msg);
 
-                int bool = 5;
+                int boolean = 5;
+                int blocage = 0;
                 printf("tentative de %s\n", buffer);
 
-                while((bool!=-1)&&(bool!=1)){
+                while((boolean!=-1)&&(boolean!=1)){
 
                     P(idSem,0,1);
 
-                    bool = isPossible(dataInit,&client,recvS,nb);
+                    boolean = isPossible(dataInit,&client,recvS,nb);
 
-                    if (bool==1)
+                    if (boolean==1)
                     {   printf("%s : possible\n", buffer);
                         actionAll(dataInit,&client,recvS,nb);
+                        sendWithSize2(client.socketServer, "Requête(s) effectué(s).", sizeof("Requête(s) effectué(s)."));
                         V(idSem,0,1);
                     }
 
-                    if(bool==0)
-                    {   
-                        printf("%s : pas possible mais probable,mise en attente\n", buffer);
-                        V(idSem,0,1);
-                        Z(idSem,0);      
-                        //peut etre mettre un compteur ici pour pas un blocage infini                  
-                    }
-
-                    if(bool==-1)
+                    if(boolean==-1)
                     {   
                         printf("%s : pas possible et improbable,abandon\n", buffer);
+                        sendWithSize2(client.socketServer, "Requête(s) annulée(s) : improbable(s)", sizeof("Requête(s) annulée(s) : improbable(s)"));
                         V(idSem,0,1);                      
                     }                     
 
+                    if(boolean==0)
+                    {   
+                        printf("%s : pas possible mais probable,mise en attente\n", buffer);
+                        V(idSem,0,1);
+                        Z(idSem,0); 
+                        blocage = blocage +1 ;     
+                        if(blocage == 3){
+                            printf("%s : Trop de tentatives\n", buffer);
+                            sendWithSize2(client.socketServer, "Requête(s) annulée(s) : trop de tentatives.", sizeof("Requête(s) annulée(s) : trop de tentatives."));
+                            boolean = -1;
+                        }
+
+                    }
                 }
 
  
                 free(recvS);
-                if(bool==1){
+                if(boolean==1){
                 int nba = semctl(idSem, 2, GETVAL);
-                printf("%i clients\n", nba);
+                //printf("%i clients\n", nba);
                 V(idSem,1, nba);
                 }
                 printSharedData(dataInit);

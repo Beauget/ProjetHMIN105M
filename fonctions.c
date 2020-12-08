@@ -588,14 +588,20 @@ int sendWithSize2(int sock, const char* data, int data_length){
 void * UpdateClient(void *param) {
 
     while(1){
-        //printf("J'attend un message d'amour while\n");
+
         struct gestionSendUpdate * p = (struct gestionSendUpdate*) param;
-        printf("J'attend un message d'amour\n");
-        //recvAll(p->socket,p->msg);
         recvWithSize2(p->socket, p->msg);
-        printf("reçus");
-        printf("%s\n",p->msg);
-        //printf("%s\n", p->msg);
+
+        /*if(strcmp(p->msg,"Requête(s) annulée(s) : trop de tentatives."))
+            printf(RED"%s\n"RESET,p->msg);
+
+        if(strcmp(p->msg,"Requête(s) annulée(s) : improbable(s)"))
+            printf(RED"%s\n"RESET,p->msg);
+
+        if(strcmp(p->msg,"Requête(s) effectué(s)."))
+            printf(GRN"%s\n"RESET,p->msg);
+        else*/
+            printf("%s\n", p->msg);
 
         pthread_cond_broadcast(p->cond);
 
@@ -612,7 +618,7 @@ void * UpdateServer(void *param) {
         if ( semctl(idSem, 1, GETVAL) > 0 ) {
 
             printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
-            sendWithSize2(p->socket, "PING DE MAJ", sizeof("PING DE MAJ"));
+            sendWithSize2(p->socket, "La base de donnée a étais mise à jour", sizeof("La base de donnée a étais mise à jour"));
             printf("envoyé\n");
             P(idSem,1,1);
             Z(idSem,1);
@@ -627,7 +633,7 @@ void * UpdateServer(void *param) {
 
 void printSharedData(struct dataStruct * data ){
     for (int i = 0; i < taille; ++i)
-    {   printf("%s\n",data[i].site );
+    {   printf("Données partagé dans : %s\n",data[i].site );
         int sizeGo= lSharedSize(data[i].LSGo);
         int sizeCpu= lSharedSize(data[i].LSCpu);
         printShared(data[i].LSGo, sizeGo);

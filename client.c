@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
             if(SendClient(ptrdata,&client,msg)<1)
                 printf(RED"Erreur pendant le send\n"RESET);
             else
-                printf(GRN"Requêtes Envoyé !\n"RESET);
+                printf(GRN"Requêtes Envoyé ! Veuillez patientez...\n"RESET);
             free(msg);
         }
     }
