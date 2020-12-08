@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             printf(GRN"Bonjour %s ! \n", buffer);
-            V(idSem,3,1);
+            V(idSem,2,1);
 
             struct clientStruct client;
             initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
                  {
                      printf("Client %s : veux se déconnecter\n", buffer);
                      close(dsCv);
-                     P(idSem,3,1);
+                     P(idSem,2,1);
                      suppressionSharedClientAll(dataInit,buffer);
                      suppressionExcluClientAll(dataInit,&client);
                      printf("Client %s : c'est déconnecter\n", buffer);
@@ -212,20 +212,34 @@ int main(int argc, char *argv[])
                 }
                 free(msg);
 
-                /*ON BLOQUE ET ON VERIFIE SI C'EST POSSIBLE*/
-                //
-                int possible = isPossible(dataInit,&client,recvS,nb);
-                printf("possible : %i\n", possible );
-                //
-                //
-                
-                //if(recvServer(client,recvS,isInt(msg))>0){
-                
-                actionAll(dataInit,&client,recvS,nb);
-                //}*/
+                int bool = -1;
+                printf("tentative de %s\n", buffer);
+
+                while(bool<0){
+                    P(idSem,0,1);
+                    //P(idSem,2,1);
+                    bool = isPossible(dataInit,&client,recvS,nb);
+
+                    if (bool>-1)
+                    {   printf("possible %s\n", buffer);
+                        actionAll(dataInit,&client,recvS,nb);
+                        V(idSem,0,1);
+                    }
+
+                    else
+                    {   
+                        printf("Pas possible %s\n", buffer);
+                        V(idSem,0,1);
+                        //V(idSem,2,1);
+                        Z(idSem,0);
+                        
+                    }                    
+
+                }
+
  
                 free(recvS);
-                int nba = semctl(idSem, 3, GETVAL);
+                int nba = semctl(idSem, 2, GETVAL);
                 printf("%i clients\n", nba);
                 V(idSem,1, nba);
 

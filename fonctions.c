@@ -612,17 +612,9 @@ void * UpdateServer(void *param) {
             printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
             sendWithSize2(p->socket, "PING DE MAJ", sizeof("PING DE MAJ"));
             printf("envoyé\n");
-            //sendAll(p->socket,"COUCOU");
             P(idSem,1,1);
-            //Z(idSem,2);
+            Z(idSem,1);
         }
-        /*sleep(3);
-        printf("pouet\n");
-        printf("0 : %i \n" ,semctl(idSem, 0, GETVAL) );
-        printf("1 : %i \n" ,semctl(idSem, 1, GETVAL) );
-        printf("2 : %i \n" ,semctl(idSem, 2, GETVAL) );
-        printf("3 : %i \n" ,semctl(idSem, 3, GETVAL) );*/
-
 
     }
 }
