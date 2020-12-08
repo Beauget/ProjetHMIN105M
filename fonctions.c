@@ -583,6 +583,8 @@ int sendWithSize2(int sock, const char* data, int data_length){
 }
 
 
+
+
 void * UpdateClient(void *param) {
 
     while(1){
@@ -661,21 +663,30 @@ int inExclu(struct LExclu * l, char * site, int size){
 //int isPExcluType(struct dataStruct * data,int position, struct LExclu * l, char * site,int value){}
 
 
-int isPExclu(struct dataStruct * data,int position, struct LExclu * l,char * type, char * site,int value){
+int isPExclu(struct dataStruct * data,int position, struct LExclu * l,char * type, char * site,int value, char * name){
     int size = lExcluSize(l);
     if (size== -1)
         size = 100; //la liste est pleine , on voit si le site est dans la liste
 
     int pos = inExclu(l,site,size);
+    int maxSite = returnMaxSite(data,position,type);
 
-        if(pos==100)//le tableau est plein et le site n'y est pas 
+        if(pos==100){
+            return -1;
+            printf("Le tableau de %s est plein. Réservation impossible !\n",name );
+        }
+
+        if ((l[pos].quantity+value)>maxSite){
+            printf("%s tente de réserver au total plus que le maximum. Réservation impossible !\n",name );
             return -1;
 
+        }
+
         if (strcmp(type,"GO")==0)
-            return data[position].go-value;
+            return (data[position].go-value>=0);
 
         if (strcmp(type,"CPU")==0)
-            return data[position].cpu-value;
+            return (data[position].cpu-value>=0);
 }
 
 int isPSharedType(struct LShared * l,char * name){
@@ -703,7 +714,8 @@ int isPShared(struct dataStruct * data,int position,char * type ,char * name,int
         int total = data[position].LSGo[pos].quantity + value; //0+value ou x+value
 
         if (maxLShared(data[position].LSGo)<total){//vérifie si il change le max
-            return (data[position].go - value);//négatif = pas possible, positif = possible
+            return ((data[position].go - value)>=0);//0 = pas possible, positif = possible
+
         }
         else
             return 1; //n'affecte pas le max
@@ -717,7 +729,7 @@ int isPShared(struct dataStruct * data,int position,char * type ,char * name,int
         int total = data[position].LSCpu[pos].quantity + value; //0+value ou x+value
         
         if (maxLShared(data[position].LSCpu)<total){
-            return (data[position].cpu -value);
+            return ((data[position].cpu -value)>=0);
         }
         else
             return 1; //n'affecte pas le max
@@ -727,6 +739,8 @@ int isPShared(struct dataStruct * data,int position,char * type ,char * name,int
 
 
 int isPossible(struct dataStruct * data, struct clientStruct * client, struct recvStruct * recvS, int size){
+    int probable = 0; 
+    int val=1;
 
     for (int i = 0; i < size; ++i)
     {   
@@ -736,11 +750,27 @@ int isPossible(struct dataStruct * data, struct clientStruct * client, struct re
         int isExclu = recvS[i].isExclu;
         int value = recvS[i].value;
 
-    
-        if (isExclu==0)
-            return isPShared(data,position,type,name,value);
 
-        if (isExclu==1)
-            return isPExclu(data,position,client->exclu,recvS[i].type,recvS[i].site,value);
+        if ((returnMaxSite(data,position,type)-value)<0){
+                printf("%s tente de réserver plus que le total. Réservation annulé !\n",name );
+                return -1;
+        }
+    
+        if (isExclu==0){
+            val = isPShared(data,position,type,name,value);
+            printf("data go:%i value : %i val: %i\n", data[position].go , value, val);
+
+        }
+
+        if (isExclu==1){
+            val = isPExclu(data,position,client->exclu,recvS[i].type,recvS[i].site,value, client->name);
+            if (val == -1)
+                return -1;//réservation impossible !
+        }
+        if (val==0){
+            probable = probable +1;
+        }
     }
+    return (1>probable); //0 si partiellement possible 
 }
+

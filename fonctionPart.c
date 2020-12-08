@@ -199,3 +199,71 @@ void actionExcluClient(struct clientStruct * client,int size, char * type, char 
     strcpy(client->exclu[size].site,site);
     client->exclu[size].quantity= value;    
 }
+
+
+int returnMaxSite(struct dataStruct * data,int position,char * type){
+    if (strcmp(type,"GO")==0)
+    {   
+        return data[position].maxGo;
+    }
+
+    if (strcmp(type,"CPU")==0)
+    {
+        return data[position].maxCpu;
+
+    }
+    return -1;    
+}
+
+
+
+
+
+/*
+
+int recvAll2(int socket, char * buf, int len) { // recvAll function
+  int remaining = len;
+  key_t keysem = ftok("shmfile", 10);
+  int idSem = semget(keysem, 7, IPC_CREAT | 0666);
+  while (remaining) {
+    int received = recv(socket, buf, remaining, 0);
+    if (received <= 0) {
+      semctl(idSem, 5, SETVAL, semctl(idSem, 5, GETVAL) - 1);
+     // printf( "[Quit] Client %s:%d disconnected !\n", ip, port);
+      exit(1);
+    }
+    buf += received;
+    remaining -= received;
+  }
+  return 0;
+}
+
+int recvWithSize2(int sock, char * data) {
+  char sizeToRecv[4];
+  if (recvAll2(sock, sizeToRecv, sizeof(sizeToRecv)) == 1) {
+    return -1;
+  };
+  if (recvAll2(sock, data, *((int * ) sizeToRecv)) == 1) {
+    return -1;
+  };
+  return *((int * ) sizeToRecv);
+}
+
+int sendall2(int sock, const char* data, int data_length){
+        int bytessend = 0;
+        while ( bytessend < data_length) {
+                int result = send(sock, data + bytessend, data_length - bytessend, 0);
+                if ( result == -1) { perror("send error"); exit(1);}    // not exit if errno == EAGAIN
+                bytessend += result;
+        }
+        return bytessend;
+}
+
+
+int sendWithSize2(int sock, const char* data, int data_length){
+        char sizeToSend[4];
+        *((int*) sizeToSend ) = data_length;
+        sendall2(sock, sizeToSend,sizeof(sizeToSend) );
+        sendall2(sock, data,data_length);
+        return 1;
+}*/

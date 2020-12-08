@@ -205,35 +205,40 @@ int main(int argc, char *argv[])
                 printf("%s requête(s) arrivent !\n", msg);
                 struct recvStruct * recvS =  malloc(sizeof(struct clientStruct)*nb);
 
-                if (recvServer(client,recvS,isInt(msg))<0)
+                if (recvServer(client,recvS,nb)<0)
                 {
                     printf("Client %s : err au recv\n", buffer );
                     free(recvS);
                 }
                 free(msg);
 
-                int bool = -1;
+                int bool = 5;
                 printf("tentative de %s\n", buffer);
 
-                while(bool<0){
+                while((bool!=-1)&&(bool!=1)){
+
                     P(idSem,0,1);
-                    //P(idSem,2,1);
+
                     bool = isPossible(dataInit,&client,recvS,nb);
 
-                    if (bool>-1)
-                    {   printf("possible %s\n", buffer);
+                    if (bool==1)
+                    {   printf("%s : possible\n", buffer);
                         actionAll(dataInit,&client,recvS,nb);
                         V(idSem,0,1);
                     }
 
-                    else
+                    if(bool==0)
                     {   
-                        printf("Pas possible %s\n", buffer);
+                        printf("%s : pas possible mais probable,mise en attente\n", buffer);
                         V(idSem,0,1);
-                        //V(idSem,2,1);
-                        Z(idSem,0);
-                        
-                    }                    
+                        Z(idSem,0);                        
+                    }
+
+                    if(bool==-1)
+                    {   
+                        printf("%s : pas possible et improbable,abandon\n", buffer);
+                        V(idSem,0,1);                      
+                    }                     
 
                 }
 
@@ -251,7 +256,7 @@ int main(int argc, char *argv[])
         if (child == parent)
         {
             wait(&child);
-            printf("Listen failed...\n");
+            //printf("\n");
             close(dsCv);
             close(ds);
             shmctl(shmid,IPC_RMID,NULL);

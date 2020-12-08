@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
     int taille = strlen(name);
 
-    if (sendAll(ds, name) < 1)
+    if ( sendAll(ds, name) < 1)
     {
         close(ds); 
         exit(1);
@@ -134,18 +134,6 @@ int main(int argc, char *argv[])
     } 
     while (1)   
     {  
-        /*if (pthread_create(affiche, NULL,signalAffichage, NULL) < 0) {
-            printf("mdr\n");
-        }
-        if (sem_getvalue(paramGestionSys->idSem,1)!=0)
-        {
-        P(paramGestionSys->idSem,1,1);
-        pthread_mutex_lock(&paramGestionSys->verrou);
-        printf("Update!\n");
-        pthread_mutex_unlock(&paramGestionSys->verrou);
-        }
-
-        printf("%i\n",sem_getvalue(paramGestionSys->idSem,1) );*/
  
         if (size<0)
         {
@@ -169,7 +157,7 @@ int main(int argc, char *argv[])
         if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
         {
             printf("En cour de déconnexion\n");
-            sendWithSize2(client.socket,msg, sizeof(msg));
+             sendWithSize2(client.socket,msg, sizeof(msg));
             free(msg);
             close(ds);
             exit(0);
@@ -181,8 +169,10 @@ int main(int argc, char *argv[])
             free(msg);
         }
 
-        else{//pthread_mutex_lock()
-            if (sendWithSize2(client.socket,msg, sizeof(msg)) < 1){
+        else
+        {
+
+            if ( sendWithSize2(client.socket,msg, sizeof(msg)) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes\n"RESET);
             }
             
@@ -192,12 +182,10 @@ int main(int argc, char *argv[])
                 printf(GRN"Requêtes Envoyé !\n"RESET);
             free(msg);
         }
-        //free(msg);
     }
 
     close(ds);
-    //printf(" %li Client : je termine\n", strlen(m));
-    //informer au serveur qu'un client est déconnecté
+
 
     return 0;
 }
