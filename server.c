@@ -231,7 +231,8 @@ int main(int argc, char *argv[])
                     {   
                         printf("%s : pas possible mais probable,mise en attente\n", buffer);
                         V(idSem,0,1);
-                        Z(idSem,0);                        
+                        Z(idSem,0);      
+                        //peut etre mettre un compteur ici pour pas un blocage infini                  
                     }
 
                     if(bool==-1)
@@ -244,10 +245,11 @@ int main(int argc, char *argv[])
 
  
                 free(recvS);
+                if(bool==1){
                 int nba = semctl(idSem, 2, GETVAL);
                 printf("%i clients\n", nba);
                 V(idSem,1, nba);
-
+                }
                 printSharedData(dataInit);
 
               
