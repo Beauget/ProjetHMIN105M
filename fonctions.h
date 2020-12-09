@@ -47,15 +47,15 @@ struct clientStruct {
     char port[20];
     struct LExclu exclu[101];
     struct dataStruct * data;
-    pthread_mutex_t verrou;
-    pthread_cond_t cond;
+    //pthread_mutex_t verrou;
+    //pthread_cond_t cond;
 
 }dataClient;
 
 
  struct dataStruct {
     char site[20];
-    int id;
+//    int id;
     int maxGo;
     int go;
     struct LShared LSGo[101];
@@ -81,10 +81,8 @@ struct recvStruct
 }Sem;*/
 
 struct gestionSendUpdate{
-    struct dataStruct *etat;
-    int size;
     int socket;
-    char * name;
+    //char * name;
     char msg[200];
     pthread_mutex_t *verrou;
     pthread_cond_t *cond;

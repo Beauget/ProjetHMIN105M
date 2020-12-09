@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
             initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
             affichageClient(client);
 
-            struct gestionSendUpdate serverUpdate;
+            struct SendUpdate serverUpdate;
             serverUpdate.etat= dataInit;
             serverUpdate.size = taille;
             serverUpdate.socket = dsCv;

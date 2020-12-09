@@ -29,7 +29,7 @@ void InitDataFromFile(struct dataStruct *data) {
                printf("Erreur fscanf !");
                exit(0);
            }
-           data[i].id = i;
+           //data[i].id = i;
            data[i].maxGo = data[i].go;
            data[i].maxCpu = data[i].cpu;
 
@@ -163,7 +163,7 @@ int sendAll(int socket,char * m){
 }
 
 int recvAll(int socket,char * msg){
-    int size =0;
+    int size =8;
     int returnSend; 
 
     if(RecvFunction(socket, (char*)&size, sizeof(size))<1){
@@ -368,16 +368,16 @@ int SendClient(/*struct dataStruct* data, */struct gestionSendUpdate * client,ch
             printf(YEL"Combien ?\n"RESET);
         }
 
-        if (sendAll(client->socket, isExclu) < 1)
+        if (send2(client->socket, isExclu,sizeof(isExclu)) < 1)
             return -1;
 
-        if (sendAll(client->socket, site) < 1)
+        if (send2(client->socket, site,sizeof(site)) < 1)
             return -1;
 
-        if (sendAll(client->socket, type) < 1)
+        if (send2(client->socket, type,sizeof(type)) < 1)
             return -1;
 
-        if (sendAll(client->socket, value) < 1)
+        if (send2(client->socket, value,sizeof(value)) < 1)
             return -1;
 
         free(isExclu);

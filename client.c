@@ -84,10 +84,10 @@ int main(int argc, char *argv[])
     pthread_cond_init(&cond, NULL);
  
     char Buffer[40];
-    struct dataStruct etat;
+    //struct dataStruct etat;
 
     struct gestionSendUpdate clientUpdate;
-    clientUpdate.etat= &etat;
+    //clientUpdate.etat= &etat;
     clientUpdate.socket = ds;
     clientUpdate.verrou=&lock;
     clientUpdate.cond=&cond;
