@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
         if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
         {
             printf("En cour de déconnexion\n");
-            sendWithSize2(clientUpdate.socket,msg, sizeof(msg));
+            send2(clientUpdate.socket,msg, sizeof(msg));
             free(msg);
             close(ds);
             exit(0);
@@ -137,9 +137,9 @@ int main(int argc, char *argv[])
         else
         {
 
-            if ( sendWithSize2(clientUpdate.socket,msg, sizeof(msg)) < 1){
+            if ( send2(clientUpdate.socket,msg, sizeof(msg)) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes.On vous déconnecte\n"RESET);
-                sendWithSize2(clientUpdate.socket,"q", (sizeof(char)));
+                send2(clientUpdate.socket,"q", (sizeof(char)));
                 close(ds);
                 free(msg);
                 exit(1);
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
             
             if(SendClient(/*ptrdata,*/&clientUpdate,msg)<1){
                 printf(RED"Erreur pendant le send.On vous déconnecte\n"RESET);
-                sendWithSize2(clientUpdate.socket,"q", sizeof(char));
+                send2(clientUpdate.socket,"q", sizeof(char));
                 close(ds);
                 free(msg);
                 exit(1);

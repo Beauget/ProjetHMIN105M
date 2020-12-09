@@ -582,8 +582,8 @@ void * UpdateServer(void *param) {
     while(1){
         if ( semctl(idSem, 1, GETVAL) > 0 ) {
 
-            printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
-            sendWithSize2(p->socket, "La base de donnée a étais mise à jour", sizeof("La base de donnée a étais mise à jour"));
+            //printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
+            send2(p->socket, "La base de donnée a étais mise à jour", sizeof("La base de donnée a étais mise à jour"));
             sendStruct(p->etat,p->size,p->socket);
             printf("envoyé\n");
             P(idSem,1,1);

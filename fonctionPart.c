@@ -256,7 +256,7 @@ int sendall2(int sock, const char* data, int data_length){
 }
 
 
-int sendWithSize2(int sock, const char* data, int data_length){
+int send2(int sock, const char* data, int data_length){
         char sizeToSend[4];
         *((int*) sizeToSend ) = data_length;
         sendall2(sock, sizeToSend,sizeof(sizeToSend) );
@@ -303,7 +303,7 @@ int sendStruct(struct dataStruct * data,int size,int socket){
         strcat(msg,"/");  
         strcat(msg,cpuMax);
 
-        if(sendWithSize2(socket,msg, sizeof(msg))<0){
+        if(send2(socket,msg, sizeof(msg))<0){
             return -1;
         }
         free(go);

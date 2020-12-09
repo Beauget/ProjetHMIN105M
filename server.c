@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 
             affichageEtat(dataInit);
             sendStruct(dataInit,taille,serverUpdate.socket);
-            
+
             while (1) 
             {   char * msg = malloc (20 * sizeof (char));
 
@@ -237,28 +237,28 @@ int main(int argc, char *argv[])
                     boolean = isPossible(dataInit,&client,recvS,nb);
 
                     if (boolean==1)
-                    {   printf("%s : possible\n", buffer);
+                    {   printf("%s : La demande est possible\n", buffer);
                         actionAll(dataInit,&client,recvS,nb);
-                        sendWithSize2(client.socketServer, "Requête(s) effectué(s).", sizeof("Requête(s) effectué(s)."));
+                        send2(client.socketServer, "Requête(s) effectué(s).", sizeof("Requête(s) effectué(s)."));
                         V(idSem,0,1);
                     }
 
                     if(boolean==-1)
                     {   
-                        printf("%s : pas possible et improbable,abandon\n", buffer);
-                        sendWithSize2(client.socketServer, "Requête(s) annulée(s) : improbable(s)", sizeof("Requête(s) annulée(s) : improbable(s)"));
+                        printf("%s : Pas possible et improbable, annulation de la demande.\n", buffer);
+                        send2(client.socketServer, "Requête(s) annulée(s) : improbable(s)", sizeof("Requête(s) annulée(s) : improbable(s)"));
                         V(idSem,0,1);                      
                     }                     
 
                     if(boolean==0)
                     {   
-                        printf("%s : pas possible mais probable,mise en attente\n", buffer);
+                        printf("%s : Pas possible mais probable,mise en attente le temps de 3 tentatives.\n", buffer);
                         V(idSem,0,1);
                         Z(idSem,0); 
                         blocage = blocage +1 ;     
                         if(blocage == 3){
                             printf("%s : Trop de tentatives\n", buffer);
-                            sendWithSize2(client.socketServer, "Requête(s) annulée(s) : trop de tentatives.", sizeof("Requête(s) annulée(s) : trop de tentatives."));
+                            send2(client.socketServer, "Requête(s) annulée(s) : trop de tentatives.", sizeof("Requête(s) annulée(s) : trop de tentatives."));
                             boolean = -1;
                         }
 
@@ -282,6 +282,7 @@ int main(int argc, char *argv[])
             close(dsCv);
             close(ds);
             shmctl(shmid,IPC_RMID,NULL);
+            printf("Serveur : je termine\n");
             exit(1);
         } 
     }
