@@ -7,7 +7,7 @@ union semun {
     struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
 };
 
- 
+
 int main(int argc, char *argv[])
 {
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-   
+
 
     printf("Serveur: bind : ok\n");
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
     initTaille();
     key_t key = ftok("sharedServer.txt", 100);
-     int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
+    int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
     if (shmid < 0) 
     { 
         printf("Serveur : erreur création de mémoire partagé || %s", strerror(errno));
@@ -113,26 +113,26 @@ int main(int argc, char *argv[])
             close(ds);
             exit(1);
         }
-   
+
         printf("Serveur: le client %s:%d est connecté  \n", inet_ntoa(adCv.sin_addr), ntohs(adCv.sin_port));
         printf("En attente de recevoir le nom du client %i \n ", dsCv);
 
         int child; //je crée un enfant du processus car un client c'est connecté !
 
-        if (child = fork())
+        if ((child = fork())==0)
         {
 
             int pidChild = getpid();
 
             //struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
- 
+
             /*recupère la mémoire partagé */
             key_t key = ftok("sharedServer", 100);
 
             if ((shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT)) < 0)
                 perror("Serveur : cannot shmget"); 
 
- 
+
             if (shmid < 0)
             {
                 perror("Serveur : shmid <0");
@@ -179,7 +179,8 @@ int main(int argc, char *argv[])
             sendStruct(dataInit,taille,serverUpdate.socket);
 
             while (1) 
-            {   char * msg = malloc (20 * sizeof (char));
+            {   
+                char * msg = malloc (20 * sizeof (char));
 
                 if (recvWithSize2(client.socketServer,msg)<1)
                 {
@@ -191,11 +192,11 @@ int main(int argc, char *argv[])
                     printf("Client %s : c'est déconnecté(e)\n", buffer);
                     free(msg);
                     free(buffer);
-                    //exit(1);
+                    exit(1);
                 }
 
                 if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
-                 {
+                {
                     printf("Client %s : veux se déconnecté(e)\n", buffer);
                     close(dsCv);
                     P(idSem,2,1);
@@ -204,9 +205,9 @@ int main(int argc, char *argv[])
                     printf("Client %s : c'est déconnecté(e)\n", buffer);
                     free(msg);
                     free(buffer);
-                    //exit(0);
-                 } 
- 
+                    exit(0);
+                } 
+
                 int nb = isInt(msg);
                 printf("%s requête(s) arrivent !\n", msg);
                 struct recvStruct * recvS =  malloc(sizeof(struct clientStruct)*nb);
@@ -222,7 +223,7 @@ int main(int argc, char *argv[])
                     free(recvS);
                     free(msg);
                     free(buffer);
-                    //exit(1);
+                    exit(1);
                 }
                 free(msg);
 
@@ -237,7 +238,8 @@ int main(int argc, char *argv[])
                     boolean = isPossible(dataInit,&client,recvS,nb);
 
                     if (boolean==1)
-                    {   printf("%s : La demande est possible\n", buffer);
+                    {   
+                        printf("%s : La demande est possible\n", buffer);
                         actionAll(dataInit,&client,recvS,nb);
                         send2(client.socketServer, "Requête(s) effectué(s).", sizeof("Requête(s) effectué(s)."));
                         V(idSem,0,1);
@@ -265,29 +267,36 @@ int main(int argc, char *argv[])
                     }
                 }
 
- 
+
                 free(recvS);
                 if(boolean==1){
-                int nba = semctl(idSem, 2, GETVAL);
-                V(idSem,1, nba);
+                    int nba = semctl(idSem, 2, GETVAL);
+                    V(idSem,1, nba);
                 }
                 printSharedData(dataInit);
 
-              
+
             } 
         }
         if (child == parent)
-        {
+        {   
+            wait(&child);
+            printf("Serveur : je termine 1\n");
             wait(&child);
             close(dsCv);
             close(ds);
             shmctl(shmid,IPC_RMID,NULL);
-            printf("Serveur : je termine\n");
+            //printf("Serveur : je termine\n");
             exit(1);
-        } 
+        }
+
+       /* if ( shmctl(shmid, IPC_RMID, NULL) < 0 )
+        {
+            perror("error shm delete");
+            exit(0);
+        }*/
+        //close(ds);
+
     }
-    close(dsCv);
-    close(ds);
-    printf("Serveur : je termine\n");
-    exit(0);
+    return 0;
 } 

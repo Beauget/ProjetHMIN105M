@@ -77,6 +77,7 @@ void affichageEtat(struct dataStruct* data) {
 for(int i = 0; i < taille;i++) {
     printf("Site : %s, GO DISPONIBLE : %i/%i, CPU DISPONIBLE : %i/%i \n",data[i].site,data[i].go,data[i].maxGo,data[i].cpu,data[i].maxCpu);
 }
+printf(RED"|||| MERCI DE RESPECTER LES MAJUSCULES ET LES MINUSCULES DANS LES DEMANDES|||| \n" RESET);
 printf(RED"|||| POUR TOUTE DEMANDE VEUILLEZ LIRE NOTRE DOCUMENTATION |||| \n" RESET);
 
 }
@@ -567,6 +568,7 @@ void * UpdateClient(void *param) {
             printf(GRN"%s"RESET, p->msg);
 
         printf(RESET"\n"RESET);
+        printf(RESET"\n"RESET);
 
         pthread_cond_broadcast(p->cond);
 
@@ -583,7 +585,7 @@ void * UpdateServer(void *param) {
         if ( semctl(idSem, 1, GETVAL) > 0 ) {
 
             //printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
-            send2(p->socket, "La base de donnée a étais mise à jour", sizeof("La base de donnée a étais mise à jour"));
+            send2(p->socket, "La base de données a été mise à jour", sizeof("La base de données a été mise à jour"));
             sendStruct(p->etat,p->size,p->socket);
             printf("envoyé\n");
             P(idSem,1,1);
