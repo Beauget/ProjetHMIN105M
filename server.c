@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
         perror("Serveur : probleme creation socket");
         exit(1);
     }
-    printf("Serveur: creation de la socket : ok\n");
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;
@@ -37,11 +36,6 @@ int main(int argc, char *argv[])
         close(ds);
         exit(1);
     }
-
-
-
-    printf("Serveur: bind : ok\n");
-
 
     struct sockaddr_in adCv; // pour obtenir l'adresse du client accepté.
     socklen_t lgCv = sizeof(struct sockaddr_in);
@@ -67,7 +61,6 @@ int main(int argc, char *argv[])
         printf("Erreur shmat");
     }
     InitDataFromFile(dataInit);
-    //printf("Site : %s, GO DISPONIBLE : %i/%i, CPU DISPONIBLE : %i/%i \n",dataInit[1].site,dataInit[1].go,dataInit[1].maxGo,dataInit[1].cpu,dataInit[1].maxCpu);
 
     //FIN MEMOIRE PARTAGER
 
@@ -93,12 +86,11 @@ int main(int argc, char *argv[])
 
     int parent = getpid(); //afin de savoir qui est le parent
 
-    //struct dataStruct etat;
+    printf(GRN"En attente de clients (pas plus de 20 en même temps)\n"RESET);
 
 
     while (1)
     {   
-        //affichageEtat(dataInit);
         int ecoute = listen(ds, 20);
         if (ecoute < 0)
         {
@@ -114,8 +106,8 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        printf("Serveur: le client %s:%d est connecté  \n", inet_ntoa(adCv.sin_addr), ntohs(adCv.sin_port));
-        printf("En attente de recevoir le nom du client %i \n ", dsCv);
+        printf(GRN"Serveur: le client %s:%d est connecté  \n"RESET, inet_ntoa(adCv.sin_addr), ntohs(adCv.sin_port));
+        printf(YEL"En attente de recevoir le nom du client %i \n "RESET, dsCv);
 
         int child; //je crée un enfant du processus car un client c'est connecté !
 
@@ -123,8 +115,6 @@ int main(int argc, char *argv[])
         {
 
             int pidChild = getpid();
-
-            //struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
 
             /*recupère la mémoire partagé */
             key_t key = ftok("sharedServer", 100);
@@ -139,9 +129,6 @@ int main(int argc, char *argv[])
                 close(ds); 
                 exit(1);
             }
-
-            printf("Server : Mise en place de la memoire partagé + du sémaphore dans le child\n");
-
 
             char *buffer = malloc(sizeof(char) * 21);
             if (recvAll(dsCv,buffer)<1)
@@ -278,24 +265,16 @@ int main(int argc, char *argv[])
 
             } 
         }
-        if (child == parent)
+
+        if (child == parent) //je suis le parent
         {   
-            wait(&child);
-            printf("Serveur : je termine 1\n");
-            wait(&child);
+            wait(&child); //j'attend mes enfant
             close(dsCv);
             close(ds);
             shmctl(shmid,IPC_RMID,NULL);
-            //printf("Serveur : je termine\n");
-            exit(1);
-        }
-
-       /* if ( shmctl(shmid, IPC_RMID, NULL) < 0 )
-        {
-            perror("error shm delete");
+            printf("Serveur : je termine\n");
             exit(0);
-        }*/
-        //close(ds);
+        }
 
     }
     return 0;

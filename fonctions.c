@@ -289,11 +289,6 @@ int siteSend(char * msg/*, struct dataStruct *data*/){
     char m[20];
     fgets(m, sizeof(m), stdin);
     m[strlen(m) - 1] = '\0';
-
-    /*if(positionSite(data,m)<0){ //la ville n'existe pas
-        return -1;
-    }*/
-
     strcpy(msg,m);
     return 1;
 }
@@ -354,9 +349,9 @@ int SendClient(/*struct dataStruct* data, */struct gestionSendUpdate * client,ch
             printf(YEL"Exclusif(e/E) ou partagé(p/P)\n"RESET);
         }
 
-        printf(GRN"Quel ville ?\n"RESET);
+        printf(GRN"Quel site ? (Veuillez respecter les majuscles et les miniscules) \n"RESET);
         while(siteSend(site/*,data*/)<0){
-            printf(YEL"Quel ville ?\n"RESET);
+            printf(YEL"Quel site ?\n"RESET);
         }
 
         printf(GRN"Cpu(c/C) ou go (g/G) ?\n"RESET);
@@ -483,11 +478,7 @@ void actionSharedAll(struct dataStruct * data, struct clientStruct * client,stru
 
     int value = recvS.value + getValue(data, position,recvS.type,positionToAdd);
     actionShared(data,position,positionToAdd,client->name, recvS.type, value);
-
-    printf("%s : %s position %s %i, value %i/%i \n", client->name,data[position].site,recvS.type ,positionToAdd , recvS.value,value);
-
     int newMax = maxLSharedType(data,position,recvS.type);
-    printf("%i\n", newMax);
 
     if (oldMax<newMax)
     {
@@ -733,7 +724,6 @@ int isPossible(struct dataStruct * data, struct clientStruct * client, struct re
     
             if (isExclu==0){
                 val = isPShared(data,position,type,name,value);
-                printf("data go:%i value : %i val: %i\n", data[position].go , value, val);
             }
 
             if (isExclu==1){

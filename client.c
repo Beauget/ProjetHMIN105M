@@ -24,8 +24,6 @@ int main(int argc, char *argv[])
         exit(1);
     } 
 
-    printf("Client: creation de la socket : ok\n");
-
     struct sockaddr_in adrServ;
     adrServ.sin_addr.s_addr = inet_addr(argv[1]);
     adrServ.sin_family = AF_INET;
@@ -33,7 +31,6 @@ int main(int argc, char *argv[])
 
     int lgAdr = sizeof(struct sockaddr_in);
 
-    printf("client :avant connect \n");
 
     /* Connexion au serveur */
     int conn = connect(ds, (struct sockaddr *)&adrServ, lgAdr);
@@ -43,15 +40,22 @@ int main(int argc, char *argv[])
         close(ds);
         exit(1);
     }
-    printf("Client : demande de connexion reussie \n");
+    printf(GRN"Client : demande de connexion reussie \n"RESET);
 
     //INITIALISATION DU CLIENT
     char name[20];
-    printf("Votre nom\n");
+    printf("Veuillez indiquer votre nom. (Aucun client ne doit avoir le même nom)\n");
     fgets(name, sizeof(name), stdin);
     name[strlen(name) - 1] = '\0';
 
     int taille = strlen(name);
+
+    if(taille==0){
+        printf("Nom invalide\n");
+        close(ds); 
+        exit(1);
+
+    }
 
     if ( sendAll(ds, name) < 1)
     {
@@ -62,32 +66,13 @@ int main(int argc, char *argv[])
     int socket = ds;
     char *ip = argv[1];
     char *port = argv[2];
-    //MEMOIRE PARTAGER
-
-    /*key_t key = ftok("sharedServer.txt", 100);
-    int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
-    struct dataStruct *ptrdata;
-    ptrdata = (struct dataStruct*)shmat(shmid,NULL,0);*/
- 
-    //FIN MEMOIRE PARTAGER
-
-    //struct clientStruct client;   
-    //initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
-    //affichageClient(client);
-     
-
-    printf("Client : avant boucle \n"); 
 
     pthread_mutex_t lock;
     pthread_mutex_init(&lock, NULL);
     pthread_cond_t cond;
     pthread_cond_init(&cond, NULL);
  
-    char Buffer[40];
-    //struct dataStruct etat;
-
     struct gestionSendUpdate clientUpdate;
-    //clientUpdate.etat= &etat;
     clientUpdate.socket = ds;
     clientUpdate.verrou=&lock;
     clientUpdate.cond=&cond;
@@ -106,12 +91,10 @@ int main(int argc, char *argv[])
     {  
  
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
-        //ptrdata = shmat(shmid, NULL, 0);
-        //affichageEtat(ptrdata);
-
         printf(BLU "Vous allez pouvoir saisir un message pour nous indiquer quel ressources vous voulez acquérir ! \n" RESET);
 
         printf("Combien de requêtes?/ Quitter?(q/Q)\n");
+        printf(RED"Ne pas mettre plusieurs fois la même combinaison de site et de type(cpu/go) dans le lot de requêtes.\n"RESET);
 
         char * msg = malloc (20 * sizeof (char));
         fgets(msg, sizeof(msg), stdin);
