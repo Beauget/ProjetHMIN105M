@@ -169,6 +169,8 @@ int main(int argc, char *argv[])
             if (pthread_create(&updt, NULL, UpdateServer, &serverUpdate) < 0) {
                 printf("erreur pthread_create\n");
                 close(serverUpdate.socket);
+                free(buffer);
+                P(idSem,2, 1);
                 exit(1);
             } 
             
