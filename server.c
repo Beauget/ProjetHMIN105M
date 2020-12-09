@@ -192,6 +192,9 @@ int main(int argc, char *argv[])
                     printf("Client %s : c'est déconnecté(e)\n", buffer);
                     free(msg);
                     free(buffer);
+                    if (semctl(idSem, 2, GETVAL)==0){
+                        printf(YEL"Il n'y as plus de clients en ligne!\n"RESET);
+                    }
                     exit(0);
                 } 
 

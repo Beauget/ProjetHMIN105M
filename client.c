@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
         }
 
         else
-        {
+        {   pthread_mutex_lock(clientUpdate.verrou);
 
             if ( send2(clientUpdate.socket,msg, sizeof(msg)) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes.On vous déconnecte\n"RESET);
@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
             else
                 printf(GRN"Requêtes Envoyé ! Veuillez patientez...\n"RESET);
             free(msg);
+            pthread_mutex_unlock(clientUpdate.verrou);
         }
     }
 

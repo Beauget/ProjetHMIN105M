@@ -550,16 +550,16 @@ void * UpdateClient(void *param) {
         recvAll(p->socket, p->msg);
 
         if (strcmp(p->msg,"Requête(s) effectué(s).")==0)
-            printf(GRN"%s"RESET, p->msg);
+            printf(GRN"%s \n"RESET, p->msg);
         else if (strcmp(p->msg,"Requête(s) annulée(s) : improbable(s)")==0)
-            printf(RED"%s"RESET, p->msg);
+            printf(RED"%s \n"RESET, p->msg);
         else if (strcmp(p->msg,"Requête(s) annulée(s) : trop de tentatives.")==0)
-            printf(YEL"%s"RESET, p->msg);
+            printf(YEL"%s \n"RESET, p->msg);
         else
             printf(GRN"%s"RESET, p->msg);
 
-        printf(RESET"\n"RESET);
-        printf(RESET"\n"RESET);
+        //printf(RESET"\n"RESET);
+        //printf(RESET"\n"RESET);
 
         pthread_cond_broadcast(p->cond);
 
@@ -575,10 +575,8 @@ void * UpdateServer(void *param) {
     while(1){
         if ( semctl(idSem, 1, GETVAL) > 0 ) {
 
-            //printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
             send2(p->socket, "La base de données a été mise à jour", sizeof("La base de données a été mise à jour"));
             sendStruct(p->etat,p->size,p->socket);
-            printf("envoyé\n");
             P(idSem,1,1);
             Z(idSem,1);
         }
