@@ -60,6 +60,9 @@ Si vous souhaitez vous déconnecter, faire la demande quand elle est disponible:
 ```
 Combien de requêtes?/ Quitter?(q/Q)
 ```
+Il n'est pas possible de supprimer une requête après l'avoir faite.
+
+Les données sont réalloué qu'à la déconnexion du client.
 
 ## Serveur
 
