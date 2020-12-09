@@ -216,11 +216,6 @@ int returnMaxSite(struct dataStruct * data,int position,char * type){
 }
 
 
-
-
-
-/*
-
 int recvAll2(int socket, char * buf, int len) { // recvAll function
   int remaining = len;
   key_t keysem = ftok("shmfile", 10);
@@ -237,6 +232,7 @@ int recvAll2(int socket, char * buf, int len) { // recvAll function
   }
   return 0;
 }
+
 
 int recvWithSize2(int sock, char * data) {
   char sizeToRecv[4];
@@ -266,4 +262,6 @@ int sendWithSize2(int sock, const char* data, int data_length){
         sendall2(sock, sizeToSend,sizeof(sizeToSend) );
         sendall2(sock, data,data_length);
         return 1;
-}*/
+}
+
+

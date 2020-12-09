@@ -9,7 +9,6 @@ union semun {
 int main(int argc, char *argv[])
 {
 
-    /* On récupère l'ip, le port et un nombre (pour l'instant) */
 
     if (argc != 3)
     {
@@ -65,49 +64,20 @@ int main(int argc, char *argv[])
     char *port = argv[2];
     //MEMOIRE PARTAGER
 
-    key_t key = ftok("sharedServer.txt", 100);
+    /*key_t key = ftok("sharedServer.txt", 100);
     int shmid = shmget(key, sizeof(struct dataStruct) * taille, 0666 | IPC_CREAT);
     struct dataStruct *ptrdata;
-    ptrdata = (struct dataStruct*)shmat(shmid,NULL,0);
+    ptrdata = (struct dataStruct*)shmat(shmid,NULL,0);*/
  
     //FIN MEMOIRE PARTAGER
 
-    struct clientStruct client;   
-    initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
-    affichageClient(client);
-
-/*    key_t keySem = ftok("sharedSem.txt",10);
-    if(keySem == -1) {
-        printf("Erreur ftok sémaphore");
-        exit(1);
-    }
-
-   int idSem = semget(keySem,taille,IPC_CREAT | 0666);
-    union semun semCtrl;
-    ushort tabSem[1];
-    for(int i = 0; i < 1; i++) {
-        tabSem[i] = 1;
-    }
-    semCtrl.array = tabSem;
-    if(idSem == -1) {
-        perror("Server : erreur création sémaphore");
-        exit(1);
-    }
-
-    int initSem = semctl(idSem,0,SETALL,semCtrl);
-
-
-    struct gestionSys * paramGestionSys = malloc(sizeof(gestionSys));
-    paramGestionSys->idSem = initSem ; 
-    pthread_mutex_init(&paramGestionSys->verrou,NULL);
-
-    pthread_t * affiche;
-    affiche = (pthread_t *) malloc (sizeof(pthread_t));*/
+    //struct clientStruct client;   
+    //initClient(&client,name,ds,-1 ,argv[1],argv[2],ptrdata); 
+    //affichageClient(client);
      
 
     printf("Client : avant boucle \n"); 
 
-    //int x = 0;
     pthread_mutex_t lock;
     pthread_mutex_init(&lock, NULL);
     pthread_cond_t cond;
@@ -127,7 +97,7 @@ int main(int argc, char *argv[])
     initTaille();
      int size=0;
 
-    affichageEtat(ptrdata);
+    //affichageEtat(ptrdata);
     if (pthread_create(&updt, NULL, UpdateClient, &clientUpdate) < 0) {
         printf("erreur pthread_create\n");
         exit(1);
@@ -135,10 +105,10 @@ int main(int argc, char *argv[])
     while (1)   
     {  
  
-        if (size<0)
+        /*if (size<0)
         {
             printf("Vous avez atteins le nombre maximum de réservations\n");
-        }
+        }*/
  
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         //ptrdata = shmat(shmid, NULL, 0);
@@ -157,7 +127,7 @@ int main(int argc, char *argv[])
         if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
         {
             printf("En cour de déconnexion\n");
-             sendWithSize2(client.socket,msg, sizeof(msg));
+             sendWithSize2(clientUpdate.socket,msg, sizeof(msg));
             free(msg);
             close(ds);
             exit(0);
@@ -172,11 +142,11 @@ int main(int argc, char *argv[])
         else
         {
 
-            if ( sendWithSize2(client.socket,msg, sizeof(msg)) < 1){
+            if ( sendWithSize2(clientUpdate.socket,msg, sizeof(msg)) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes\n"RESET);
             }
             
-            if(SendClient(ptrdata,&client,msg)<1)
+            if(SendClient(/*ptrdata,*/&clientUpdate,msg)<1)
                 printf(RED"Erreur pendant le send\n"RESET);
             else
                 printf(GRN"Requêtes Envoyé ! Veuillez patientez...\n"RESET);

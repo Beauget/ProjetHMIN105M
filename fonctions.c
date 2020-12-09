@@ -284,14 +284,14 @@ int isExcluSend(char * msg){
 
 }
 
-int siteSend(char * msg, struct dataStruct *data){
+int siteSend(char * msg/*, struct dataStruct *data*/){
     char m[20];
     fgets(m, sizeof(m), stdin);
     m[strlen(m) - 1] = '\0';
 
-    if(positionSite(data,m)<0){ //la ville n'existe pas
+    /*if(positionSite(data,m)<0){ //la ville n'existe pas
         return -1;
-    }
+    }*/
 
     strcpy(msg,m);
     return 1;
@@ -332,7 +332,7 @@ int valueSend(char * msg){
 }
 
 
-int SendClient(struct dataStruct* data, struct clientStruct * client,char * size){
+int SendClient(/*struct dataStruct* data, */struct gestionSendUpdate * client,char * size){
     int nbrRequetes=isInt(size);
 
     for (int i = 0; i <nbrRequetes; ++i)
@@ -350,7 +350,7 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
         }
 
         printf(GRN"Quel ville ?\n"RESET);
-        while(siteSend(site,data)<0){
+        while(siteSend(site/*,data*/)<0){
             printf(YEL"Quel ville ?\n"RESET);
         }
 
@@ -384,6 +384,10 @@ int SendClient(struct dataStruct* data, struct clientStruct * client,char * size
     
     return 1;
 }
+ /*       char * r0 = malloc (20 * sizeof (char));
+        char * r1 = malloc (20 * sizeof (char));
+        char * r2 = malloc (20 * sizeof (char));
+        char * r3 = malloc (20 * sizeof (char));*/
 
 /*FONCTIONS RECV COTÉ SERVEUR*/
 int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
@@ -394,7 +398,7 @@ int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
         for (int j = 0; j < 4; ++j)
         {   
             char * m = malloc (20 * sizeof (char));
-            if (recvAll(client.socketServer,m)<1)
+            if (recvWithSize2(client.socketServer,m)<1)
             {
                 printf("Client %s : erreur au recv", client.name);
                 return -1;
@@ -532,65 +536,12 @@ int Z(int semid, int semnum) { //0
 
 
 
-
-
-
-int recvAll2(int socket, char * buf, int len) { // recvAll function
-  int remaining = len;
-  key_t keysem = ftok("shmfile", 10);
-  int idSem = semget(keysem, 7, IPC_CREAT | 0666);
-  while (remaining) {
-    int received = recv(socket, buf, remaining, 0);
-    if (received <= 0) {
-      semctl(idSem, 5, SETVAL, semctl(idSem, 5, GETVAL) - 1);
-     // printf( "[Quit] Client %s:%d disconnected !\n", ip, port);
-      exit(1);
-    }
-    buf += received;
-    remaining -= received;
-  }
-  return 0;
-}
-
-int recvWithSize2(int sock, char * data) {
-  char sizeToRecv[4];
-  if (recvAll2(sock, sizeToRecv, sizeof(sizeToRecv)) == 1) {
-    return -1;
-  };
-  if (recvAll2(sock, data, *((int * ) sizeToRecv)) == 1) {
-    return -1;
-  };
-  return *((int * ) sizeToRecv);
-}
-
-int sendall2(int sock, const char* data, int data_length){
-        int bytessend = 0;
-        while ( bytessend < data_length) {
-                int result = send(sock, data + bytessend, data_length - bytessend, 0);
-                if ( result == -1) { perror("send error"); exit(1);}    // not exit if errno == EAGAIN
-                bytessend += result;
-        }
-        return bytessend;
-}
-
-
-int sendWithSize2(int sock, const char* data, int data_length){
-        char sizeToSend[4];
-        *((int*) sizeToSend ) = data_length;
-        sendall2(sock, sizeToSend,sizeof(sizeToSend) );
-        sendall2(sock, data,data_length);
-        return 1;
-}
-
-
-
-
 void * UpdateClient(void *param) {
 
     while(1){
-
+        printf("J'attend un message\n");
         struct gestionSendUpdate * p = (struct gestionSendUpdate*) param;
-        recvWithSize2(p->socket, p->msg);
+        recvAll(p->socket, p->msg);
 
         /*if(strcmp(p->msg,"Requête(s) annulée(s) : trop de tentatives."))
             printf(RED"%s\n"RESET,p->msg);
@@ -601,9 +552,9 @@ void * UpdateClient(void *param) {
         if(strcmp(p->msg,"Requête(s) effectué(s)."))
             printf(GRN"%s\n"RESET,p->msg);
         else*/
-            printf("%s\n", p->msg);
+        printf("%s\n", p->msg);
 
-        pthread_cond_broadcast(p->cond);
+        //pthread_cond_broadcast(p->cond);
 
     }
 }
@@ -756,26 +707,29 @@ int isPossible(struct dataStruct * data, struct clientStruct * client, struct re
         int isExclu = recvS[i].isExclu;
         int value = recvS[i].value;
 
-
-        if ((returnMaxSite(data,position,type)-value)<0){
-                printf("%s tente de réserver plus que le total. Réservation annulé !\n",name );
-                return -1;
-        }
+        if (position > - 1)
+        {
+            if ((returnMaxSite(data,position,type)-value)<0){
+                    printf("%s tente de réserver plus que le total. Réservation annulé !\n",name );
+                    return -1;
+            }
     
-        if (isExclu==0){
-            val = isPShared(data,position,type,name,value);
-            printf("data go:%i value : %i val: %i\n", data[position].go , value, val);
+            if (isExclu==0){
+                val = isPShared(data,position,type,name,value);
+                printf("data go:%i value : %i val: %i\n", data[position].go , value, val);
+            }
 
+            if (isExclu==1){
+                val = isPExclu(data,position,client->exclu,recvS[i].type,recvS[i].site,value, client->name);
+                if (val == -1)
+                    return -1;//réservation impossible !
+            }
+            if (val==0){
+                probable = probable +1;
+            }
         }
-
-        if (isExclu==1){
-            val = isPExclu(data,position,client->exclu,recvS[i].type,recvS[i].site,value, client->name);
-            if (val == -1)
-                return -1;//réservation impossible !
-        }
-        if (val==0){
-            probable = probable +1;
-        }
+        else
+            return -1;
     }
     return (1>probable); //0 si partiellement possible 
 }
