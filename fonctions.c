@@ -185,7 +185,7 @@ int recvAll(int socket,char * msg){
 int positionSite(struct dataStruct * data, char * site){
     for (int i = 0; i < taille; ++i)
     {
-        if( strcmp(data[i].site,site)==0){
+        if( strcmp(data[i].site,site)==0&&strlen(site)!=0){
             return i;
         }
     }
