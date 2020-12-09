@@ -17,6 +17,7 @@ Deuxième terminal :
 ./client <ip> <socket>
 ```
 Si on souhaite lancer dans la même machine l'ip doit être : 127.000.001 
+
 La socket doit être inutilisé. (en générale à partir de 1025 elles sont disponibles)
 
 ## Client
@@ -36,6 +37,7 @@ Paris cpu ....
 Paris go.....
 ```
 Tout les sites demandé doivent respecter les majuscules et les minuscules. Sinon la requête ne sera pas traité et considéré "improbable".
+
 Veuillez attendre une réponse après l'envoie d'un lot de requêtes.
 
 3 cas sont possible :
@@ -79,6 +81,7 @@ Il est possible de changer les données à manipuler en modifiant le fichier dat
 ...
 ```
 note 1 : (Si le serveur à déja étais lancé une première fois il faut redémarrer la machine sinon la création/utilisation de la mémoire partagé ne fonctionnera pas)
+
 note 2 : Le nombre de caratère de chaque <..> ne doit pas dépasser 19.
 
 Amusez vous bien !
