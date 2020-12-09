@@ -265,3 +265,53 @@ int sendWithSize2(int sock, const char* data, int data_length){
 }
 
 
+
+void intToChar(int value, char * msg){
+    char * nb =  malloc(sizeof(char)* 20);
+    sprintf(nb, "%d", value);
+    strcpy(msg,nb);
+    free(nb);
+}
+
+int sendStruct(struct dataStruct * data,int size,int socket){
+    for (int i = 0; i < size; ++i)
+    {
+        char * site =  malloc(sizeof(char)* 20);
+        char * go =  malloc(sizeof(char)* 20);
+        char * goMax =  malloc(sizeof(char)* 20);
+        char * cpu =  malloc(sizeof(char)* 20);
+        char * cpuMax =  malloc(sizeof(char)* 20);
+        //char * msg =  malloc(sizeof(char)* 200);  
+        char msg[200];
+        strcpy(msg,"");  
+
+        intToChar(data[i].go,go);
+        intToChar(data[i].maxGo,goMax);
+        intToChar(data[i].cpu,cpu);
+        intToChar(data[i].maxCpu,cpuMax);
+        strcpy(site,data[i].site);
+
+        strcat(msg,"Site : ");
+        strcat(msg,site); 
+        strcat(msg," ,GO : "); 
+        strcat(msg,go);
+        strcat(msg,"/");  
+        strcat(msg,goMax);
+        strcat(msg,"/"); 
+        strcat(msg," ,CPU : "); 
+        strcat(msg,cpu);
+        strcat(msg,"/");  
+        strcat(msg,cpuMax);
+
+        if(sendWithSize2(socket,msg, sizeof(msg))<0){
+            return -1;
+        }
+        free(go);
+        free(goMax);
+        free(cpu);
+        free(cpuMax);
+        strcpy(msg,"");
+    }
+
+    return 1;
+}

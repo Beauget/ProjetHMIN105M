@@ -82,6 +82,7 @@ struct recvStruct
 
 struct gestionSendUpdate{
     struct dataStruct *etat;
+    int size;
     int socket;
     char * name;
     char msg[200];
@@ -91,6 +92,7 @@ struct gestionSendUpdate{
 
 struct SendUpdate{
     struct dataStruct *etat;
+    int size;
     int socket;
     char * name;
     char msg[200];

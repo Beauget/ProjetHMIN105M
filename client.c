@@ -105,11 +105,6 @@ int main(int argc, char *argv[])
     while (1)   
     {  
  
-        /*if (size<0)
-        {
-            printf("Vous avez atteins le nombre maximum de réservations\n");
-        }*/
- 
         printf(BLU " ###### Bienvenue dans notre système de réservation en ligne ###### \n" RESET);
         //ptrdata = shmat(shmid, NULL, 0);
         //affichageEtat(ptrdata);
@@ -127,7 +122,7 @@ int main(int argc, char *argv[])
         if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
         {
             printf("En cour de déconnexion\n");
-             sendWithSize2(clientUpdate.socket,msg, sizeof(msg));
+            sendWithSize2(clientUpdate.socket,msg, sizeof(msg));
             free(msg);
             close(ds);
             exit(0);
@@ -143,11 +138,22 @@ int main(int argc, char *argv[])
         {
 
             if ( sendWithSize2(clientUpdate.socket,msg, sizeof(msg)) < 1){
-                printf(RED"Erreur à l'envoie du nombre de requêtes\n"RESET);
+                printf(RED"Erreur à l'envoie du nombre de requêtes.On vous déconnecte\n"RESET);
+                sendWithSize2(clientUpdate.socket,"q", (sizeof(char)));
+                close(ds);
+                free(msg);
+                exit(1);
+
             }
             
-            if(SendClient(/*ptrdata,*/&clientUpdate,msg)<1)
-                printf(RED"Erreur pendant le send\n"RESET);
+            if(SendClient(/*ptrdata,*/&clientUpdate,msg)<1){
+                printf(RED"Erreur pendant le send.On vous déconnecte\n"RESET);
+                sendWithSize2(clientUpdate.socket,"q", sizeof(char));
+                close(ds);
+                free(msg);
+                exit(1);
+
+            }
             else
                 printf(GRN"Requêtes Envoyé ! Veuillez patientez...\n"RESET);
             free(msg);

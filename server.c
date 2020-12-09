@@ -159,8 +159,9 @@ int main(int argc, char *argv[])
             initClient(&client,buffer,ds,dsCv,inet_ntoa(adCv.sin_addr), argv[1],dataInit);
             affichageClient(client);
 
-             struct gestionSendUpdate serverUpdate;
+            struct gestionSendUpdate serverUpdate;
             serverUpdate.etat= dataInit;
+            serverUpdate.size = taille;
             serverUpdate.socket = dsCv;
             pthread_t updt; 
 
@@ -173,10 +174,12 @@ int main(int argc, char *argv[])
                 P(idSem,2, 1);
                 exit(1);
             } 
+
+            affichageEtat(dataInit);
+            sendStruct(dataInit,taille,serverUpdate.socket);
             
             while (1) 
             {   char * msg = malloc (20 * sizeof (char));
-                affichageEtat(dataInit);
 
                 if (recvWithSize2(client.socketServer,msg)<1)
                 {

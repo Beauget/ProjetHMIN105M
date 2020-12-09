@@ -342,6 +342,10 @@ int SendClient(/*struct dataStruct* data, */struct gestionSendUpdate * client,ch
         char * site =  malloc (20 * sizeof (char));
         char * type  =  malloc (20 * sizeof (char));
         char * value=  malloc (20 * sizeof (char));
+        strcpy(isExclu,"");
+        strcpy(site,"");
+        strcpy(type,"");
+        strcpy(value,"");
 
 
         printf(GRN"Exclusif(e/E) ou partagé(p/P)\n"RESET);
@@ -384,21 +388,25 @@ int SendClient(/*struct dataStruct* data, */struct gestionSendUpdate * client,ch
     
     return 1;
 }
- /*       char * r0 = malloc (20 * sizeof (char));
-        char * r1 = malloc (20 * sizeof (char));
-        char * r2 = malloc (20 * sizeof (char));
-        char * r3 = malloc (20 * sizeof (char));*/
+
 
 /*FONCTIONS RECV COTÉ SERVEUR*/
 int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
     //strcpy(m,"");
     char recv[4][20];
+
+    strcpy(recv[0],"");
+    strcpy(recv[1],"");
+    strcpy(recv[2],"");
+    strcpy(recv[3],"");
+
     for (int i = 0; i < size; ++i)
     {
         for (int j = 0; j < 4; ++j)
         {   
             char * m = malloc (20 * sizeof (char));
-            if (recvWithSize2(client.socketServer,m)<1)
+            strcpy(m,"");
+            if (recvAll(client.socketServer,m)<1)
             {
                 printf("Client %s : erreur au recv", client.name);
                 return -1;
@@ -418,7 +426,14 @@ int recvServer(struct clientStruct  client,struct recvStruct * recvS ,int size){
         printf("Exlusif?:%i ",recvS[i].isExclu);
         printf("%s ",recvS[i].site);
         printf("%s ",recvS[i].type);
-        printf("%i\n",recvS[i].value); 
+        printf("%i\n",recvS[i].value);
+
+        strcpy(recv[0],"");
+        strcpy(recv[1],"");
+        strcpy(recv[2],"");
+        strcpy(recv[3],"");
+
+
     }
     return 1;
 }
@@ -539,11 +554,19 @@ int Z(int semid, int semnum) { //0
 void * UpdateClient(void *param) {
 
     while(1){
-        printf("J'attend un message\n");
         struct gestionSendUpdate * p = (struct gestionSendUpdate*) param;
         recvAll(p->socket, p->msg);
 
-        printf("%s\n", p->msg);
+        if (strcmp(p->msg,"Requête(s) effectué(s).")==0)
+            printf(GRN"%s"RESET, p->msg);
+        else if (strcmp(p->msg,"Requête(s) annulée(s) : improbable(s)")==0)
+            printf(RED"%s"RESET, p->msg);
+        else if (strcmp(p->msg,"Requête(s) annulée(s) : trop de tentatives.")==0)
+            printf(YEL"%s"RESET, p->msg);
+        else
+            printf(GRN"%s"RESET, p->msg);
+
+        printf(RESET"\n"RESET);
 
         pthread_cond_broadcast(p->cond);
 
@@ -561,6 +584,7 @@ void * UpdateServer(void *param) {
 
             printf("Envoie valeur %i \n" ,semctl(idSem, 1, GETVAL) );
             sendWithSize2(p->socket, "La base de donnée a étais mise à jour", sizeof("La base de donnée a étais mise à jour"));
+            sendStruct(p->etat,p->size,p->socket);
             printf("envoyé\n");
             P(idSem,1,1);
             Z(idSem,1);
@@ -724,4 +748,3 @@ int isPossible(struct dataStruct * data, struct clientStruct * client, struct re
     }
     return (1>probable); //0 si partiellement possible 
 }
-
