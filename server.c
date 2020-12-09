@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
                     printf("Client %s : c'est déconnecté(e)\n", buffer);
                     free(msg);
                     free(buffer);
-                    exit(1);
+                    //exit(1);
                 }
 
                 if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
                     printf("Client %s : c'est déconnecté(e)\n", buffer);
                     free(msg);
                     free(buffer);
-                    exit(0);
+                    //exit(0);
                  } 
  
                 int nb = isInt(msg);
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
                     free(recvS);
                     free(msg);
                     free(buffer);
-                    exit(1);
+                    //exit(1);
                 }
                 free(msg);
 
