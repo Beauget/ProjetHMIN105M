@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
             {   
                 char * msg = malloc (20 * sizeof (char));
 
-                if (recvWithSize2(client.socketServer,msg)<1)
+                if (recv2(client.socketServer,msg)<1)
                 {
                     printf("Client %s : erreur durant la réception du message \n", buffer );
                     close(dsCv);

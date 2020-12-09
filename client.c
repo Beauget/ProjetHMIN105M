@@ -1,9 +1,9 @@
 #include "fonctions.c" 
 
 union semun {
-    struct semid_ds *buf;    /* Tampon pour IPC_STAT, IPC_SET */
-    unsigned short  *array;  /* Tableau pour GETALL, SETALL */
-    struct seminfo  *__buf;  /* Tampon pour IPC_INFO */
+    struct semid_ds *buf;    
+    unsigned short  *array;  
+    struct seminfo  *__buf;  
 };
 
 int main(int argc, char *argv[])
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
         }
 
         else
-        {   pthread_mutex_lock(clientUpdate.verrou);
+        {
 
             if ( send2(clientUpdate.socket,msg, sizeof(msg)) < 1){
                 printf(RED"Erreur à l'envoie du nombre de requêtes.On vous déconnecte\n"RESET);
@@ -140,7 +140,6 @@ int main(int argc, char *argv[])
             else
                 printf(GRN"Requêtes Envoyé ! Veuillez patientez...\n"RESET);
             free(msg);
-            pthread_mutex_unlock(clientUpdate.verrou);
         }
     }
 
