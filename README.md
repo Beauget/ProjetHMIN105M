@@ -1,12 +1,12 @@
 # ProjetHMIN105M
 
-##Compilation
+## Compilation
 
 ```bash
 make
 ```
 
-##Usage
+## Usage
 
 Premier terminal :
 ```bash
@@ -19,7 +19,7 @@ Deuxième terminal :
 Si on souhaite lancer dans la même machine l'ip doit être : 127.000.001 
 La socket doit être inutilisé. (en générale à partir de 1025 elles sont disponibles)
 
-##Client
+## Client
 
 Tout les clients connecté simultanement doivent avoir un nom différents et inférieur à 19 caratères. Le nombre maximum de clients connectés est 20.
 
@@ -59,17 +59,17 @@ Si vous souhaitez vous déconnecter, faire la demande quand elle est disponible:
 Combien de requêtes?/ Quitter?(q/Q)
 ```
 
-##Serveur
+## Serveur
 
 Le serveur affiche des informations concernant les clients connectés/déconnectés.
 Après avoir était lancé, aucune manipulation est à faire dessus.
 
-##Quit
+## Quit
 
 Pour quitter correctement il faut d'abords d'assurer qu'il n'y ai plus de client connecté.
 Ensuite faire ctrl + c sur le terminal ou est lancé le serveur.
 
-##Changing the shared data
+## Changing the shared data
 
 Il est possible de changer les données à manipuler en modifiant le fichier data.txt en réspectant le modèle si dessous:
 
@@ -79,4 +79,6 @@ Il est possible de changer les données à manipuler en modifiant le fichier dat
 ...
 ```
 note 1 : (Si le serveur à déja étais lancé une première fois il faut redémarrer la machine sinon la création/utilisation de la mémoire partagé ne fonctionnera pas)
-note 2 : Le nombre de caratère de chaque <..> ne doit pas dépasser 19;
+note 2 : Le nombre de caratère de chaque <..> ne doit pas dépasser 19.
+
+Amusez vous bien !
