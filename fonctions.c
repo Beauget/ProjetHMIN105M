@@ -543,18 +543,9 @@ void * UpdateClient(void *param) {
         struct gestionSendUpdate * p = (struct gestionSendUpdate*) param;
         recvAll(p->socket, p->msg);
 
-        /*if(strcmp(p->msg,"Requête(s) annulée(s) : trop de tentatives."))
-            printf(RED"%s\n"RESET,p->msg);
-
-        if(strcmp(p->msg,"Requête(s) annulée(s) : improbable(s)"))
-            printf(RED"%s\n"RESET,p->msg);
-
-        if(strcmp(p->msg,"Requête(s) effectué(s)."))
-            printf(GRN"%s\n"RESET,p->msg);
-        else*/
         printf("%s\n", p->msg);
 
-        //pthread_cond_broadcast(p->cond);
+        pthread_cond_broadcast(p->cond);
 
     }
 }
@@ -584,7 +575,7 @@ void * UpdateServer(void *param) {
 
 void printSharedData(struct dataStruct * data ){
     for (int i = 0; i < taille; ++i)
-    {   printf("Données partagé dans : %s\n",data[i].site );
+    {   printf(GRN"Données partagé dans : %s\n"RESET,data[i].site );
         int sizeGo= lSharedSize(data[i].LSGo);
         int sizeCpu= lSharedSize(data[i].LSCpu);
         printShared(data[i].LSGo, sizeGo);

@@ -93,15 +93,13 @@ int main(int argc, char *argv[])
 
     int parent = getpid(); //afin de savoir qui est le parent
 
-  
-    char Buffer[40];
-    struct dataStruct etat;
+    //struct dataStruct etat;
 
 
     while (1)
     {   
         //affichageEtat(dataInit);
-        int ecoute = listen(ds, 5);
+        int ecoute = listen(ds, 20);
         if (ecoute < 0)
         {
             printf("Serveur : Erreur lors de l'appel à listen() \n");
@@ -125,7 +123,6 @@ int main(int argc, char *argv[])
         {
 
             int pidChild = getpid();
-            char m[60];
 
             //struct dataClient *infoClient = malloc(sizeof(struct clientStruct));
  
@@ -152,7 +149,7 @@ int main(int argc, char *argv[])
                 printf("Client %i : erreur nom irrécuparable", ds);
                 free(buffer);
                 close(dsCv);
-                close(ds); 
+                //close(ds); 
                 exit(1);
             }
             printf(GRN"Bonjour %s ! \n", buffer);
@@ -178,27 +175,31 @@ int main(int argc, char *argv[])
             while (1) 
             {   char * msg = malloc (20 * sizeof (char));
                 affichageEtat(dataInit);
-                //strcpy(msg,"");
 
                 if (recvWithSize2(client.socketServer,msg)<1)
                 {
-                    printf("Client %s : err nombre de requêtes", buffer);
-                    free(buffer);
+                    printf("Client %s : erreur durant la réception du message \n", buffer );
                     close(dsCv);
-                    close(ds);
+                    P(idSem,2, 1);
+                    suppressionSharedClientAll(dataInit,buffer);
+                    suppressionExcluClientAll(dataInit,&client);
+                    printf("Client %s : c'est déconnecté(e)\n", buffer);
+                    free(msg);
+                    free(buffer);
                     exit(1);
                 }
 
                 if ((strcmp(msg,"q")==0)||(strcmp(msg,"Q")==0))
                  {
-                     printf("Client %s : veux se déconnecter\n", buffer);
-                     close(dsCv);
-                     P(idSem,2,1);
-                     suppressionSharedClientAll(dataInit,buffer);
-                     suppressionExcluClientAll(dataInit,&client);
-                     printf("Client %s : c'est déconnecter\n", buffer);
-                     free(buffer);
-                     exit(0);
+                    printf("Client %s : veux se déconnecté(e)\n", buffer);
+                    close(dsCv);
+                    P(idSem,2,1);
+                    suppressionSharedClientAll(dataInit,buffer);
+                    suppressionExcluClientAll(dataInit,&client);
+                    printf("Client %s : c'est déconnecté(e)\n", buffer);
+                    free(msg);
+                    free(buffer);
+                    exit(0);
                  } 
  
                 int nb = isInt(msg);
@@ -207,8 +208,16 @@ int main(int argc, char *argv[])
 
                 if (recvServer(client,recvS,nb)<0)
                 {
-                    printf("Client %s : err au recv\n", buffer );
+                    printf("Client %s : erreur durant la réception du message \n", buffer );
+                    close(dsCv);
+                    P(idSem,2, 1);
+                    suppressionSharedClientAll(dataInit,buffer);
+                    suppressionExcluClientAll(dataInit,&client);
+                    printf("Client %s : c'est déconnecté(e)\n", buffer);
                     free(recvS);
+                    free(msg);
+                    free(buffer);
+                    exit(1);
                 }
                 free(msg);
 
@@ -255,7 +264,6 @@ int main(int argc, char *argv[])
                 free(recvS);
                 if(boolean==1){
                 int nba = semctl(idSem, 2, GETVAL);
-                //printf("%i clients\n", nba);
                 V(idSem,1, nba);
                 }
                 printSharedData(dataInit);
@@ -266,7 +274,6 @@ int main(int argc, char *argv[])
         if (child == parent)
         {
             wait(&child);
-            //printf("\n");
             close(dsCv);
             close(ds);
             shmctl(shmid,IPC_RMID,NULL);

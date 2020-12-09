@@ -84,7 +84,7 @@ struct gestionSendUpdate{
     struct dataStruct *etat;
     int socket;
     char * name;
-    char msg[20];
+    char msg[500];
     pthread_mutex_t *verrou;
     pthread_cond_t *cond;
 }gestionSendUpdate;
@@ -93,5 +93,5 @@ struct SendUpdate{
     struct dataStruct *etat;
     int socket;
     char * name;
-    char msg[20];
+    char msg[500];
 }SendUpdate;
